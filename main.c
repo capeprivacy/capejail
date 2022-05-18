@@ -10,12 +10,14 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "enableseccomp.h"
 
 int main(void) {
     FILE *fp = NULL;
     int err = 0;
+    char *a = NULL;
 
     /*
      * stderr is not buffered, so if this process gets a sigkill, it will be
@@ -29,6 +31,15 @@ int main(void) {
         exit(1);
     }
     fprintf(stderr, "seccomp enabled\n");
+
+    fprintf(stderr, "allocating memory\n");
+    a = malloc(1000 * sizeof(*a));
+    if (a == NULL) {
+        perror("could not allocate memory\n");
+        exit(1);
+    }
+
+    memset(a, 1000, sizeof(*a));
 
     fprintf(stderr, "opening test.txt\n");
     fp = fopen("test.txt", "w");
