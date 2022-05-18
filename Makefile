@@ -17,7 +17,7 @@ libenableseccomp.so: enableseccomp.o
 	$(CC) -shared -o libenableseccomp.so $(CFLAGS) enableseccomp.o
 
 libenableseccomp.a: enableseccomp.o
-	ar rcs -o  libenableseccomp.a enableseccomp.o
+	$(AR) rcs -o  libenableseccomp.a enableseccomp.o
 
 .PHONY: clean
 clean:
