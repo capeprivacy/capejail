@@ -53,6 +53,7 @@ int main(void) {
     fprintf(stderr, "writing to test.txt\n");
     fprintf(fp, "some text\n");
     fclose(fp);
+    free(a);
 
     fprintf(stderr, "done\n");
     return 0;
