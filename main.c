@@ -18,6 +18,7 @@ int main(void) {
     FILE *fp = NULL;
     int err = 0;
     char *a = NULL;
+    const size_t len = 1000;
 
     /*
      * stderr is not buffered, so if this process gets a sigkill, it will be
@@ -33,13 +34,13 @@ int main(void) {
     fprintf(stderr, "seccomp enabled\n");
 
     fprintf(stderr, "allocating memory\n");
-    a = malloc(1000 * sizeof(*a));
+    a = malloc(len * sizeof(*a));
     if (a == NULL) {
         perror("could not allocate memory\n");
         exit(1);
     }
 
-    memset(a, 1000, sizeof(*a));
+    memset(a, 0, len * sizeof(*a));
 
     fprintf(stderr, "opening test.txt\n");
     fp = fopen("test.txt", "w");
