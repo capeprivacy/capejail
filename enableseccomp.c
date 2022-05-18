@@ -37,10 +37,12 @@ int enable_seccomp() {
     TRY_RULE(SCMP_SYS(brk));
 
     err = seccomp_load(ctx);
-    /* TODO: cleanup ctx? */
+    seccomp_release(ctx);
     return err;
 
 fail:
-    /* TODO: cleanup ctx? */
+    if (ctx) {
+        seccomp_release(ctx);
+    }
     return -1;
 }
