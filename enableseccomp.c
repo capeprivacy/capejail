@@ -6,7 +6,7 @@
 
 #define TRY_RULE(A) do { \
     if ((A)) { \
-        fprintf(stderr, "failed to initialize seccomp"); \
+        fprintf(stderr, "failed to add seccomp rule"); \
         goto fail; \
     } \
 } while (0)
