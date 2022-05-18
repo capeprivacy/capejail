@@ -21,8 +21,9 @@ int main(void) {
     const size_t len = 1000;
 
     /*
-     * stderr is not buffered, so if this process gets a sigkill, it will be
-     * able to write a message to stderr before hand
+     * stderr is not buffered, so if this process gets a sigkill in a line
+     * following a print, it will be able to write a message to stderr before
+     * the process gets killed
      */
     fprintf(stderr, "hello world!\n");
 
