@@ -3,3 +3,4 @@
 *.a
 *.sw?
 seccomp
+test.txt
