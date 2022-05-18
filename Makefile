@@ -7,10 +7,10 @@ LDFLAGS=-lseccomp
 seccomp: libenableseccomp.a main.o
 	$(CC) -o seccomp main.o libenableseccomp.a $(CFLAGS) $(LDFLAGS)
 
-main.o: main.c
+main.o: main.c enableseccomp.h
 	$(CC) -c main.c $(CFLAGS)
 
-enableseccomp.o: enableseccomp.c
+enableseccomp.o: enableseccomp.c enableseccomp.h
 	$(CC) -c enableseccomp.c $(CFLAGS)
 
 libenableseccomp.so: enableseccomp.o

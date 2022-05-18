@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <seccomp.h>
-#include <unistd.h>
 
 #include "enableseccomp.h"
 
@@ -17,6 +16,7 @@
 
 int enable_seccomp() {
     scmp_filter_ctx ctx = NULL;
+    int err = 0;
 
     ctx = seccomp_init(SCMP_ACT_KILL); /* default action: kill */
     if (ctx == NULL) {
@@ -36,7 +36,9 @@ int enable_seccomp() {
     TRY_RULE(SCMP_SYS(mmap));
     TRY_RULE(SCMP_SYS(brk));
 
-    return seccomp_load(ctx);
+    err = seccomp_load(ctx);
+    /* TODO: cleanup ctx? */
+    return err;
 
 fail:
     /* TODO: cleanup ctx? */
