@@ -1,6 +1,6 @@
 # Capejail
 
-Enable a secure compute environment in a jail that blocks certain syscalls
+Enable a secure compute environment in a jail that blocks certain syscalls.
 
 ## Motivation
 
