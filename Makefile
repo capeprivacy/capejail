@@ -8,12 +8,14 @@ WARNING=-Werror -Wall -Wextra -Wpedantic -Wfloat-equal -Wundef -Wshadow \
 		-Wstrict-overflow=5 -Wwrite-strings -Waggregate-return -Wcast-qual \
 		-Wswitch-enum -Wunreachable-code -Wformat -Wformat -Wformat-security
 
-FLAGS=-fstack-protector-all -fPIC -D_FORTIFY_SOURCE=2 -pipe -fcf-protection
+FLAGS=-fstack-protector-all -fPIC -pipe -fcf-protection
 CFLAGS=$(WARNING) $(STD) $(OPT) $(FLAGS)
 
-release: OPT=-O2
+.PHONY: release
+release: OPT=-O2 -D_FORTIFY_SOURCE=2
 release: all
 
+.PHONY: debug
 debug: OPT=-O0 -ggdb3
 debug: all
 
