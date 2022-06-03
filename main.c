@@ -1,9 +1,10 @@
+#define _GNU_SOURCE
+#include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <ctype.h>
 #include <stdarg.h>
-#include <unistd.h>
 #include <sys/types.h>
 #include <pwd.h>
 
@@ -85,6 +86,7 @@ int main(int argc, char **argv) {
     char *root = NULL;
     char *user = NULL;
     char *directory = NULL;
+    char **env = {NULL};
     uid_t uid;
     struct passwd *user_data = NULL;
 
@@ -134,5 +136,5 @@ int main(int argc, char **argv) {
 
     program_path = argv[index];
     program_args = argv + index;
-    return execvp(program_path, program_args);
+    return execvpe(program_path, program_args, env);
 }
