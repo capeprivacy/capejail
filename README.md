@@ -29,13 +29,15 @@ we do not have access to configuring namespaces while in the Nitro Enclave.
 $ capejail -h
 capejail: enable a secure compute environment in a jail that blocks certain syscalls
 usage:
-	capejail -u USER -r CHROOT [-d DIRECTORY] PROGRAM [ARGS]
+	capejail -u USER -r CHROOT [-d DIRECTORY] [-I] -- PROGRAM [ARGS]
 
 	-d	directory to start in within jail
 
 	-r	path to chroot directory to use in jail
 
 	-u	user to run as within the jail
+
+	-I	insecure mode, launch with seccomp disabled
 
 NOTE: should be run as root or with sudo to allow chroot
 ```

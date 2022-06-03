@@ -16,11 +16,11 @@ static void print_usage(void) {
             "%s: enable a secure compute environment in a jail that blocks "
             "certain syscalls\n"
             "usage:\n"
-            "\t%s -u USER -r CHROOT [-d DIRECTORY] -- PROGRAM [ARGS]\n\n"
+            "\t%s -u USER -r CHROOT [-d DIRECTORY] [-I] -- PROGRAM [ARGS]\n\n"
             "\t-d\tdirectory to start in within jail\n\n"
             "\t-r\tpath to chroot directory to use in jail\n\n"
             "\t-u\tuser to run as within the jail\n\n"
-            "\t-i\tinsecure mode, launch with seccomp disabled\n\n"
+            "\t-I\tinsecure mode, launch with seccomp disabled\n\n"
             "NOTE: should be run as root or with sudo to allow chroot\n\n",
             program_name, program_name);
 }
@@ -71,7 +71,7 @@ static int parse_opts(int argc, char **argv, char **root, char **user,
         case 'h':
             print_usage();
             exit(EXIT_SUCCESS);
-        case 'i':
+        case 'I':
             *insecure_mode = true;
             break;
         default:
