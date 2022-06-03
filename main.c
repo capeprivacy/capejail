@@ -34,7 +34,7 @@ static void logerror(const char *fmt, ...) {
 
     /*
      * clang-tidy has a bug where a false positive warning is thrown for this
-     * exact sitation. We will suppress this for now by using "NOLINT" since
+     * exact situation. We will suppress this for now by using "NOLINT" since
      * this is currently an open bug and not an actual problem with this source
      * code.
      *
