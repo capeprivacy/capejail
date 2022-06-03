@@ -1,8 +1,9 @@
 #define _GNU_SOURCE
-#include <stdio.h>
-#include <stdlib.h>
 #include <pwd.h>
 #include <stdarg.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
 
 #include "enableseccomp.h"
@@ -18,6 +19,7 @@ static void print_usage(void) {
             "\t-d\tdirectory to start in within jail\n\n"
             "\t-r\tpath to chroot directory to use in jail\n\n"
             "\t-u\tuser to run as within the jail\n\n"
+            "\t-i\tinsecure mode, launch with seccomp disabled\n\n"
             "NOTE: should be run as root or with sudo to allow chroot\n\n",
             program_name, program_name);
 }
@@ -48,13 +50,13 @@ static void logerror(const char *fmt, ...) {
  *             in the jail
  */
 static int parse_opts(int argc, char **argv, char **root, char **user,
-                      const char **directory) {
+                      const char **directory, bool *insecure_mode) {
     int c;
     if (!root || !user) {
         logerror("parse_opts got null pointer for root and/or user");
         return -1;
     }
-    while ((c = getopt(argc, argv, "hr:u:d:")) != -1) {
+    while ((c = getopt(argc, argv, "ihr:u:d:")) != -1) {
         switch (c) {
         case 'd':
             *directory = optarg;
@@ -68,6 +70,9 @@ static int parse_opts(int argc, char **argv, char **root, char **user,
         case 'h':
             print_usage();
             exit(EXIT_SUCCESS);
+        case 'i':
+            *insecure_mode = true;
+            break;
         default:
             return -1;
         }
@@ -84,6 +89,7 @@ static int parse_opts(int argc, char **argv, char **root, char **user,
     }
 }
 
+#include <string.h>
 int main(int argc, char **argv) {
     int err = 0;
     int index;
@@ -92,13 +98,14 @@ int main(int argc, char **argv) {
     char *root = NULL;
     char *user = NULL;
     const char *directory = "/";
-    char **env = {NULL};
+    char *envp[2];
     uid_t uid;
     struct passwd *user_data = NULL;
+    bool insecure_mode = false;
 
     program_name = argv[0];
 
-    index = parse_opts(argc, argv, &root, &user, &directory);
+    index = parse_opts(argc, argv, &root, &user, &directory, &insecure_mode);
     if (index < 0) {
         print_usage();
         exit(EXIT_FAILURE);
@@ -112,6 +119,12 @@ int main(int argc, char **argv) {
     }
 
     uid = user_data->pw_uid;
+    if (uid == 0) {
+        envp[0] = strdup("PS1=[jail]# ");
+    } else {
+        envp[0] = strdup("PS1=[jail]$ ");
+    }
+    envp[1] = NULL;
 
     err = chroot(root);
     if (err) {
@@ -134,13 +147,21 @@ int main(int argc, char **argv) {
         exit(EXIT_FAILURE);
     }
 
-    err = enable_seccomp();
-    if (err) {
-        logerror("could not enable seccomp");
-        exit(EXIT_FAILURE);
+    if (!insecure_mode) {
+        err = enable_seccomp();
+        if (err) {
+            logerror("could not enable seccomp");
+            exit(EXIT_FAILURE);
+        }
     }
 
     program_path = argv[index];
     program_args = argv + index;
-    return execvpe(program_path, program_args, env);
+    err = execvpe(program_path, program_args, envp);
+    if (err) {
+        perror(program_path);
+        logerror("could not exec: %s", program_path);
+        exit(EXIT_FAILURE);
+    }
+    return err;
 }
