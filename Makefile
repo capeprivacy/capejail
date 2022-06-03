@@ -19,6 +19,10 @@ release: all
 debug: OPT=-O0 -ggdb3
 debug: all
 
+.PHONY: sanitize
+sanitize: OPT=-O0 -ggdb3 -fsanitize=address,undefined,leak
+sanitize: all
+
 .PHONY: all
 all: capejail libenableseccomp.so libenableseccomp.a
 
