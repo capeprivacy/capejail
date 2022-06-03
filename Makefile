@@ -1,8 +1,14 @@
 CC=cc
 AR=ar
 OPT=-O2
-CFLAGS=-Werror -Wall -Wextra -std=gnu99 $(OPT) -fPIC
+CFLAGS=
 LDFLAGS=-lseccomp
+
+release: CFLAGS=-Werror -Wall -Wextra -std=gnu99 $(OPT) -fPIC
+release: all
+
+debug: CFLAGS=-Werror -Wall -Wextra -std=gnu99 -O0 -ggdb3 -fPIC
+debug: all
 
 .PHONY: all
 all: seccomp libenableseccomp.so libenableseccomp.a

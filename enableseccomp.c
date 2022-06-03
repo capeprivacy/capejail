@@ -3,46 +3,121 @@
 
 #include "enableseccomp.h"
 
-#define TRY_RULE(A) do { \
-    if (seccomp_rule_add(ctx, SCMP_ACT_ALLOW, (A), 0) != 0) { \
-        fprintf( \
-            stderr, \
-            "failed to add seccomp rule for syscall number: %d\n", \
-            (A) \
-        ); \
-        goto fail; \
-    } \
-} while (0)
+static const int ALLOWED_SYSCALLS[] = {
+    SCMP_SYS(access),
+    SCMP_SYS(arch_prctl),
+    SCMP_SYS(bind),
+    SCMP_SYS(brk),
+    SCMP_SYS(chdir),
+    SCMP_SYS(clone),
+    SCMP_SYS(clone3),
+    SCMP_SYS(close),
+    SCMP_SYS(connect),
+    SCMP_SYS(dup),
+    SCMP_SYS(dup2),
+    SCMP_SYS(epoll_create1),
+    SCMP_SYS(execve),
+    SCMP_SYS(exit),
+    SCMP_SYS(exit_group),
+    SCMP_SYS(faccessat),
+    SCMP_SYS(faccessat2),
+    SCMP_SYS(fchdir),
+    SCMP_SYS(fcntl),
+    SCMP_SYS(fstat),
+    SCMP_SYS(futex),
+    SCMP_SYS(getcwd),
+    SCMP_SYS(getdents64),
+    SCMP_SYS(getegid),
+    SCMP_SYS(geteuid),
+    SCMP_SYS(getgid),
+    SCMP_SYS(getpgrp),
+    SCMP_SYS(getpid),
+    SCMP_SYS(getppid),
+    SCMP_SYS(getrandom),
+    SCMP_SYS(getsockname),
+    SCMP_SYS(gettid),
+    SCMP_SYS(getuid),
+    SCMP_SYS(getxattr),
+    SCMP_SYS(ioctl),
+    SCMP_SYS(kill),
+    SCMP_SYS(lgetxattr),
+    SCMP_SYS(lseek),
+    SCMP_SYS(lstat),
+    SCMP_SYS(mkdir),
+    SCMP_SYS(mmap),
+    SCMP_SYS(mprotect),
+    SCMP_SYS(munmap),
+    SCMP_SYS(newfstatat),
+    SCMP_SYS(openat),
+    SCMP_SYS(pipe),
+    SCMP_SYS(pipe2),
+    SCMP_SYS(prctl),
+    SCMP_SYS(pread64),
+    SCMP_SYS(prlimit64),
+    SCMP_SYS(pselect6),
+    SCMP_SYS(read),
+    SCMP_SYS(readahead),
+    SCMP_SYS(readlink),
+    SCMP_SYS(rename),
+    SCMP_SYS(rt_sigaction),
+    SCMP_SYS(rt_sigprocmask),
+    SCMP_SYS(rt_sigreturn),
+    SCMP_SYS(select),
+    SCMP_SYS(setpgid),
+    SCMP_SYS(set_robust_list),
+    SCMP_SYS(set_tid_address),
+    SCMP_SYS(sigaltstack),
+    SCMP_SYS(signal),
+    SCMP_SYS(socket),
+    SCMP_SYS(stat),
+    SCMP_SYS(statfs),
+    SCMP_SYS(statx),
+    SCMP_SYS(sysinfo),
+    SCMP_SYS(umask),
+    SCMP_SYS(uname),
+    SCMP_SYS(unlink),
+    SCMP_SYS(vfork),
+    SCMP_SYS(wait4),
+    SCMP_SYS(write)
+};
 
-int enable_seccomp() {
+enum {
+    NUM_SYSCALLS = sizeof(ALLOWED_SYSCALLS) / sizeof(*ALLOWED_SYSCALLS)
+};
+
+int enable_seccomp(void) {
     scmp_filter_ctx ctx = NULL;
     int err = 0;
 
     ctx = seccomp_init(SCMP_ACT_KILL); /* default action: kill */
     if (ctx == NULL) {
+        err = -1;
         fprintf(stderr, "failed to initialize seccomp");
-        goto fail;
+        goto cleanup;
     }
 
-    TRY_RULE(SCMP_SYS(rt_sigreturn));
-    TRY_RULE(SCMP_SYS(exit));
-    TRY_RULE(SCMP_SYS(exit_group));
-    TRY_RULE(SCMP_SYS(read));
-    TRY_RULE(SCMP_SYS(write));
-    TRY_RULE(SCMP_SYS(getrandom));
-    TRY_RULE(SCMP_SYS(close));
-    TRY_RULE(SCMP_SYS(rt_sigaction));
-    TRY_RULE(SCMP_SYS(munmap));
-    TRY_RULE(SCMP_SYS(mmap));
-    TRY_RULE(SCMP_SYS(brk));
+    for (size_t i = 0; i < NUM_SYSCALLS; i++) {
+        const int the_syscall = ALLOWED_SYSCALLS[i];
+        err = seccomp_rule_add(ctx, SCMP_ACT_ALLOW, the_syscall, 0);
+        if (err) {
+            fprintf(
+                stderr,
+                "failed to add seccomp rule for syscall number: %d\n",
+                the_syscall
+            );
+            goto cleanup;
+        }
+    }
 
     err = seccomp_load(ctx);
-    seccomp_release(ctx);
-    return err;
+    if (err) {
+        fprintf(stderr, "failed to load seccomp\n");
+        goto cleanup;
+    }
 
-fail:
+cleanup:
     if (ctx) {
         seccomp_release(ctx);
     }
-    return -1;
+    return err;
 }
