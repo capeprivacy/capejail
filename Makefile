@@ -11,10 +11,10 @@ debug: CFLAGS=-Werror -Wall -Wextra -std=gnu99 -O0 -ggdb3 -fPIC
 debug: all
 
 .PHONY: all
-all: seccomp libenableseccomp.so libenableseccomp.a
+all: capejail libenableseccomp.so libenableseccomp.a
 
-seccomp: libenableseccomp.a main.o
-	$(CC) -o seccomp main.o libenableseccomp.a $(CFLAGS) $(LDFLAGS)
+capejail: libenableseccomp.a main.o
+	$(CC) -o capejail main.o libenableseccomp.a $(CFLAGS) $(LDFLAGS)
 
 main.o: main.c enableseccomp.h
 	$(CC) -c main.c $(CFLAGS)
@@ -33,4 +33,4 @@ clean:
 	rm -f *.a
 	rm -f *.so
 	rm -f *.o
-	rm -f seccomp
+	rm -f capejail

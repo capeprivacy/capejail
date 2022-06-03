@@ -6,3 +6,4 @@ seccomp
 test.txt
 .vscode/
 startjail.sh
+capejail

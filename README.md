@@ -1,41 +1,44 @@
-# Seccomp
+# Capejail
 
-## Build and load docker to EC2
+Enable a secure compute environment in a jail that blocks certain syscalls
 
+## Usage
 ```
-docker build . -t seccomp && docker save seccomp | gzip | ssh ec2-user@54.174.92.239 docker load
-```
+$ capejail -h
+capejail: enable a secure compute environment in a jail that blocks certain syscalls
+usage:
+	capejail -u USER -r CHROOT [-d DIRECTORY] PROGRAM [ARGS]
 
-## Run on EC2
+	-d	directory to start in within jail
 
-```
-nitro-cli terminate-enclave --all
-nitro-cli build-enclave --docker-uri seccomp --output-file seccomp.eif
-nitro-cli run-enclave --eif-path seccomp.eif --cpu-count 2 --memory 2000 --debug-mode --attach-console
-```
+	-r	path to chroot directory to use in jail
 
-Output:
+	-u	user to run as within the jail
 
-```
-hello world!
-seccomp enabled
-opening test.txt
-[    0.324635] audit: type=1326 audit(1652889593.379:2): auid=4294967295 uid=0 gid=0 ses=4294967295 subj=kernel pid=594 comm="seccomp" exe="/seccomp" sig=31 arch=c000003e syscall=257 compat=0 ip=0x7facd9d37be7 code=0x0
-child exited by signal
+NOTE: should be run as root or with sudo to allow chroot
 ```
 
-## Which syscalls to whitelist?
-
-Running the program with `strace` will reveal which syscalls were made. One can
-brute force which syscalls are needed for a certain program by running it with
-`strace`, finding the last syscall that got it killed, then whitelisting it and
-repeat.
-
-```
-$ strace ./seccomp
-...
-mmap(NULL, 1000001536, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x9
-+++ killed by SIGSYS (core dumped) +++
+# Example
+```bash
+(py310) [kyle@fedora capejail]$ sudo capejail -r ~/chroot -u jailuser -- bash
+[jail]$ echo $USER
+jailuser
+[jail]$ pwd
+/
+[jail]$ ls -l
+total 8
+drwxr-xr-x 1 root root  730 Jun  2 20:15 bin
+drwxr-xr-x 1 root root   14 Jun  2 18:52 dev
+drwxr-xr-x 1 root root 1274 Jun  2 20:15 etc
+drwxr-xr-x 1 root root   84 Jun  2 20:15 lib
+drwxr-xr-x 1 root root   40 May 24 20:28 lib64
+drwxr-xr-x 1 root root 1008 Jun  2 20:15 sbin
+drwxr-xr-x 1 root root    0 Jun  2 19:58 tmp
+drwxr-xr-x 1 root root   84 May 24 20:28 usr
+drwxr-xr-x 1 root root   90 Jun  2 14:27 var
+[jail]$ chroot /tmp # for security, this is supposed to fail
 Bad system call (core dumped)
-$
+[jail]$ exit
+exit
+(py310) [kyle@fedora capejail]$
 ```

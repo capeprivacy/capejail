@@ -14,11 +14,13 @@ static char *program_name = NULL;
 static void print_usage() {
     fprintf(
         stderr,
-        "%s: enable a secure compute environment that blocks certain syscalls\n"
+        "%s: enable a secure compute environment in a jail that blocks certain syscalls\n"
         "usage:\n"
-        "\t%s -u USER -r CHROOT PROGRAM [ARGS]\n"
-        "\tu:\tuser to run as within the jail\n\n"
-        "\tr:\tpath to chroot directory to use in jail\n",
+        "\t%s -u USER -r CHROOT [-d DIRECTORY] PROGRAM [ARGS]\n\n"
+        "\t-d\tdirectory to start in within jail\n\n"
+        "\t-r\tpath to chroot directory to use in jail\n\n"
+        "\t-u\tuser to run as within the jail\n\n"
+        "NOTE: should be run as root or with sudo to allow chroot\n\n",
         program_name,
         program_name
     );
@@ -38,13 +40,18 @@ static void logerror(const char *fmt, ...) {
  * On success: returns the index in argv of the program and arguments to exec
  *             in the jail
  */
-static int parse_opts(int argc, char** argv, char **root, char **user) {
+static int parse_opts(int argc, char** argv, char **root, char **user, char **directory) {
     int c;
     if (!root || !user) {
         logerror("parse_opts got null pointer for root and/or user");
+        return -1;
     }
-    while ((c = getopt (argc, argv, "hr:u:")) != -1) {
+    *directory = "/";
+    while ((c = getopt (argc, argv, "hr:u:d:")) != -1) {
         switch (c) {
+            case 'd':
+                *directory = optarg;
+                break;
             case 'r':
                 *root = optarg;
                 break;
@@ -77,12 +84,13 @@ int main(int argc, char **argv) {
     char **program_args = NULL;
     char *root = NULL;
     char *user = NULL;
+    char *directory = NULL;
     uid_t uid;
     struct passwd *user_data = NULL;
 
     program_name = argv[0];
 
-    index = parse_opts(argc, argv, &root, &user);
+    index = parse_opts(argc, argv, &root, &user, &directory);
     if (index < 0) {
         print_usage();
         exit(EXIT_FAILURE);
@@ -101,6 +109,13 @@ int main(int argc, char **argv) {
     if (err) {
         perror(root);
         logerror("could not chroot to: '%s' (are you root?)", root);
+        exit(EXIT_FAILURE);
+    }
+
+    err = chdir(directory);
+    if (err) {
+        perror(directory);
+        logerror("could not change directory to '%s'", directory);
         exit(EXIT_FAILURE);
     }
 
