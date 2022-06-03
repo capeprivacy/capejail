@@ -3,6 +3,9 @@
 #include <unistd.h>
 #include <ctype.h>
 #include <stdarg.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <pwd.h>
 
 #include "enableseccomp.h"
 
@@ -14,7 +17,7 @@ static void print_usage() {
         "%s: enable a secure compute environment that blocks certain syscalls\n"
         "usage:\n"
         "\t%s -u USER -r CHROOT PROGRAM [ARGS]\n"
-        "\tu:\tuser to run as in jail\n\n"
+        "\tu:\tuser to run as within the jail\n\n"
         "\tr:\tpath to chroot directory to use in jail\n",
         program_name,
         program_name
@@ -25,7 +28,7 @@ static void logerror(const char *fmt, ...) {
     va_list args;
     va_start(args, fmt);
     fprintf(stderr, "%s: ", program_name);
-    fprintf(stderr, fmt, args);
+    vfprintf(stderr, fmt, args);
     fprintf(stderr, "\n");
     va_end(args);
 }
@@ -40,7 +43,7 @@ static int parse_opts(int argc, char** argv, char **root, char **user) {
     if (!root || !user) {
         logerror("parse_opts got null pointer for root and/or user");
     }
-    while ((c = getopt (argc, argv, "r:u:")) != -1) {
+    while ((c = getopt (argc, argv, "hr:u:")) != -1) {
         switch (c) {
             case 'r':
                 *root = optarg;
@@ -51,17 +54,6 @@ static int parse_opts(int argc, char** argv, char **root, char **user) {
             case 'h':
                 print_usage();
                 exit(EXIT_SUCCESS);
-            case '?':
-                puts("here");
-                fflush(stdout);
-                if ((optopt == 'r') || (optopt == 'u')) {
-                    logerror("option -%c requires an argument", optopt);
-                } else if (isprint(optopt)) {
-                    logerror("unknown option `-%c'", optopt);
-                } else {
-                    logerror("unknown option character `\\x%x'", optopt);
-                }
-                return -1;
             default:
                 return -1;
         }
@@ -85,6 +77,8 @@ int main(int argc, char **argv) {
     char **program_args = NULL;
     char *root = NULL;
     char *user = NULL;
+    uid_t uid;
+    struct passwd *user_data = NULL;
 
     program_name = argv[0];
 
@@ -94,11 +88,28 @@ int main(int argc, char **argv) {
         exit(EXIT_FAILURE);
     }
 
-    /*
-     * TODO:
-     *     - chroot
-     *     - setuid
-     */
+    err = chroot(root);
+    if (err) {
+        perror(root);
+        logerror("could not chroot to: '%s'", root);
+        exit(EXIT_FAILURE);
+    }
+
+    user_data = getpwnam(user);
+    if (!user_data) {
+        perror(user);
+        logerror("failed to lookup user: '%s'", user);
+        exit(EXIT_FAILURE);
+    }
+
+    uid = user_data->pw_uid;
+
+    err = setuid(uid);
+    if (err) {
+        perror(user);
+        logerror("could not setuid to: '%d'", uid);
+        exit(EXIT_FAILURE);
+    }
 
     err = enable_seccomp();
     if (err) {
