@@ -28,6 +28,10 @@ libenableseccomp.so: enableseccomp.o
 libenableseccomp.a: enableseccomp.o
 	$(AR) rcs -o  libenableseccomp.a enableseccomp.o
 
+.PHONY: lint
+lint:
+	clang-tidy *.c *.h
+
 .PHONY: clean
 clean:
 	rm -f *.a

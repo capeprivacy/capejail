@@ -31,7 +31,18 @@ static void logerror(const char *fmt, ...) {
     va_list args;
     va_start(args, fmt);
     fprintf(stderr, "%s: ", program_name);
-    vfprintf(stderr, fmt, args);
+
+    /*
+     * clang-tidy has a bug where a false positive warning is thrown for this
+     * exact sitation. We will suppress this for now by using "NOLINT" since
+     * this is currently an open bug and not an actual problem with this source
+     * code.
+     *
+     * bug report:
+     * https://bugs.llvm.org/show_bug.cgi?id=41311
+     */
+    vfprintf(stderr, fmt, args); /* NOLINT */
+
     fprintf(stderr, "\n");
     va_end(args);
 }
