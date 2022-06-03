@@ -1,13 +1,20 @@
 CC=cc
 AR=ar
 OPT=-O2
-CFLAGS=
+STD=-std=gnu99
 LDFLAGS=-lseccomp
+WARNING=-Werror -Wall -Wextra -Wpedantic -Wfloat-equal -Wundef -Wshadow \
+		-Wpointer-arith -Wcast-align -Wstrict-prototypes -Wmissing-prototypes \
+		-Wstrict-overflow=5 -Wwrite-strings -Waggregate-return -Wcast-qual \
+		-Wswitch-enum -Wunreachable-code -Wformat -Wformat -Wformat-security
 
-release: CFLAGS=-Werror -Wall -Wextra -std=gnu99 $(OPT) -fPIC
+FLAGS=-fstack-protector-all -fPIC -D_FORTIFY_SOURCE=2 -pipe -fcf-protection
+CFLAGS=$(WARNING) $(STD) $(OPT) $(FLAGS)
+
+release: OPT=-O2
 release: all
 
-debug: CFLAGS=-Werror -Wall -Wextra -std=gnu99 -O0 -ggdb3 -fPIC
+debug: OPT=-O0 -ggdb3
 debug: all
 
 .PHONY: all

@@ -12,7 +12,7 @@
 
 static char *program_name = NULL;
 
-static void print_usage() {
+static void print_usage(void) {
     fprintf(
         stderr,
         "%s: enable a secure compute environment in a jail that blocks certain syscalls\n"
@@ -52,13 +52,12 @@ static void logerror(const char *fmt, ...) {
  * On success: returns the index in argv of the program and arguments to exec
  *             in the jail
  */
-static int parse_opts(int argc, char** argv, char **root, char **user, char **directory) {
+static int parse_opts(int argc, char** argv, char **root, char **user, const char **directory) {
     int c;
     if (!root || !user) {
         logerror("parse_opts got null pointer for root and/or user");
         return -1;
     }
-    *directory = "/";
     while ((c = getopt (argc, argv, "hr:u:d:")) != -1) {
         switch (c) {
             case 'd':
@@ -96,7 +95,7 @@ int main(int argc, char **argv) {
     char **program_args = NULL;
     char *root = NULL;
     char *user = NULL;
-    char *directory = NULL;
+    const char *directory = "/";
     char **env = {NULL};
     uid_t uid;
     struct passwd *user_data = NULL;
