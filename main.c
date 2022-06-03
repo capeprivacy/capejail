@@ -1,30 +1,27 @@
 #define _GNU_SOURCE
-#include <unistd.h>
+#include <ctype.h>
+#include <pwd.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
-#include <ctype.h>
-#include <stdarg.h>
 #include <sys/types.h>
-#include <pwd.h>
+#include <unistd.h>
 
 #include "enableseccomp.h"
 
 static char *program_name = NULL;
 
 static void print_usage(void) {
-    fprintf(
-        stderr,
-        "%s: enable a secure compute environment in a jail that blocks certain syscalls\n"
-        "usage:\n"
-        "\t%s -u USER -r CHROOT [-d DIRECTORY] -- PROGRAM [ARGS]\n\n"
-        "\t-d\tdirectory to start in within jail\n\n"
-        "\t-r\tpath to chroot directory to use in jail\n\n"
-        "\t-u\tuser to run as within the jail\n\n"
-        "NOTE: should be run as root or with sudo to allow chroot\n\n",
-        program_name,
-        program_name
-    );
+    fprintf(stderr,
+            "%s: enable a secure compute environment in a jail that blocks "
+            "certain syscalls\n"
+            "usage:\n"
+            "\t%s -u USER -r CHROOT [-d DIRECTORY] -- PROGRAM [ARGS]\n\n"
+            "\t-d\tdirectory to start in within jail\n\n"
+            "\t-r\tpath to chroot directory to use in jail\n\n"
+            "\t-u\tuser to run as within the jail\n\n"
+            "NOTE: should be run as root or with sudo to allow chroot\n\n",
+            program_name, program_name);
 }
 
 static void logerror(const char *fmt, ...) {
@@ -52,28 +49,29 @@ static void logerror(const char *fmt, ...) {
  * On success: returns the index in argv of the program and arguments to exec
  *             in the jail
  */
-static int parse_opts(int argc, char** argv, char **root, char **user, const char **directory) {
+static int parse_opts(int argc, char **argv, char **root, char **user,
+                      const char **directory) {
     int c;
     if (!root || !user) {
         logerror("parse_opts got null pointer for root and/or user");
         return -1;
     }
-    while ((c = getopt (argc, argv, "hr:u:d:")) != -1) {
+    while ((c = getopt(argc, argv, "hr:u:d:")) != -1) {
         switch (c) {
-            case 'd':
-                *directory = optarg;
-                break;
-            case 'r':
-                *root = optarg;
-                break;
-            case 'u':
-                *user = optarg;
-                break;
-            case 'h':
-                print_usage();
-                exit(EXIT_SUCCESS);
-            default:
-                return -1;
+        case 'd':
+            *directory = optarg;
+            break;
+        case 'r':
+            *root = optarg;
+            break;
+        case 'u':
+            *user = optarg;
+            break;
+        case 'h':
+            print_usage();
+            exit(EXIT_SUCCESS);
+        default:
+            return -1;
         }
     }
     if (!*root || !*user) {

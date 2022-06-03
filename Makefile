@@ -45,6 +45,10 @@ libenableseccomp.a: enableseccomp.o
 lint:
 	clang-tidy *.c *.h
 
+.PHONY: fmt
+fmt:
+	clang-format -i *.c *.h
+
 .PHONY: clean
 clean:
 	rm -f *.a
