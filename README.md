@@ -2,6 +2,28 @@
 
 Enable a secure compute environment in a jail that blocks certain syscalls
 
+## Motivation
+
+After experimentation, I've found that existing jail programs such
+[nsjail](https://github.com/google/nsjail)
+and [firejail](https://firejail.wordpress.com/) do not work inside of AWS nitro
+enclaves. This jail implementation was built specifically for safeguarding Cape
+from user code when running inside of an enclave.
+
+The security is multilayer.
+1. User code is run in a `chroot` so that it cannot access files outside of its
+designated jail.
+2. User code is run as a different user with locked down permissions.
+3. User code is run with seccomp filters set to block harmful syscalls that can
+be used to escape the jail.
+
+The chroot environment can be customized to the level of security desired.
+For example, by restricting access to `/proc` and certain devices in `/dev/`
+AND running the jail as a non-root user, you can keep the jailed user from
+seeing other processes and devices that it should not have access to. While
+Linux Namespaces are commonly used to achieve this, it has been found that
+we do not have access to configuring namespaces while in the Nitro Enclave.
+
 ## Usage
 ```
 $ capejail -h
