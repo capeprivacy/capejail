@@ -88,13 +88,6 @@ int main(int argc, char **argv) {
         exit(EXIT_FAILURE);
     }
 
-    err = chroot(root);
-    if (err) {
-        perror(root);
-        logerror("could not chroot to: '%s'", root);
-        exit(EXIT_FAILURE);
-    }
-
     user_data = getpwnam(user);
     if (!user_data) {
         perror(user);
@@ -103,6 +96,13 @@ int main(int argc, char **argv) {
     }
 
     uid = user_data->pw_uid;
+
+    err = chroot(root);
+    if (err) {
+        perror(root);
+        logerror("could not chroot to: '%s' (are you root?)", root);
+        exit(EXIT_FAILURE);
+    }
 
     err = setuid(uid);
     if (err) {
