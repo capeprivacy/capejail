@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <string.h>
 
 #include "enableseccomp.h"
 
@@ -89,7 +90,6 @@ static int parse_opts(int argc, char **argv, char **root, char **user,
     }
 }
 
-#include <string.h>
 int main(int argc, char **argv) {
     int err = 0;
     int index;
