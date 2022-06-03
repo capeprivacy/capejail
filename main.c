@@ -1,10 +1,8 @@
 #define _GNU_SOURCE
-#include <ctype.h>
-#include <pwd.h>
-#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/types.h>
+#include <pwd.h>
+#include <stdarg.h>
 #include <unistd.h>
 
 #include "enableseccomp.h"
