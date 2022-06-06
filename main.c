@@ -1,3 +1,4 @@
+#define _GNU_SOURCE
 #include <pwd.h>
 #include <stdarg.h>
 #include <stdbool.h>
@@ -57,7 +58,7 @@ static int parse_opts(int argc, char **argv, char **root, char **user,
         logerror("parse_opts got null pointer for root and/or user");
         return -1;
     }
-    while ((c = getopt(argc, argv, "ihr:u:d:")) != -1) {
+    while ((c = getopt(argc, argv, "Ihr:u:d:")) != -1) {
         switch (c) {
         case 'd':
             *directory = optarg;
@@ -157,7 +158,7 @@ int main(int argc, char **argv) {
 
     program_path = argv[index];
     program_args = argv + index;
-    err = execve(program_path, program_args, envp);
+    err = execvpe(program_path, program_args, envp);
     if (err) {
         perror(program_path);
         logerror("could not exec: %s", program_path);

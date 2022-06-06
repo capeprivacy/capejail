@@ -13,6 +13,17 @@ RUN make -j$(nproc)
 
 FROM debian:bullseye-slim
 
-COPY --from=builder /build/seccomp  /
+RUN mkdir /chroot && \
+    mkdir /chroot/dev && \
+    cp -r /bin /chroot/ && \
+    cp -r /sbin /chroot/ && \
+    cp -r /usr /chroot/ && \
+    cp -r /etc /chroot/ && \
+    cp -r /lib /chroot/ && \
+    cp -r /lib64 /chroot/
 
-ENTRYPOINT [ "/seccomp" ]
+COPY --from=builder /build/capejail  /bin/
+
+RUN useradd jailuser
+
+ENTRYPOINT [ "capejail","-u","jailuser","-r","/chroot","--","/bin/ls","-l" ]
