@@ -29,7 +29,7 @@ we do not have access to configuring namespaces while in the Nitro Enclave.
 $ capejail -h
 capejail: enable a secure compute environment in a jail that blocks certain syscalls
 usage:
-	capejail -u USER -r CHROOT [-d DIRECTORY] [-I] -- PROGRAM [ARGS]
+	capejail [OPTION] -- PROGRAM [ARGS]
 
 	-d	directory to start in within jail
 
@@ -42,7 +42,7 @@ usage:
 NOTE: should be run as root or with sudo to allow chroot
 ```
 
-# Example
+## Example
 ```bash
 (py310) [kyle@fedora capejail]$ sudo capejail -r ~/chroot -u jailuser -- bash
 [jail]$ echo $USER
