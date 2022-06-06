@@ -1,12 +1,12 @@
-#define _GNU_SOURCE
 #include <pwd.h>
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <string.h>
+#include <unistd.h>
 
+#include "banned.h"
 #include "enableseccomp.h"
 
 static char *program_name = NULL;
@@ -157,7 +157,7 @@ int main(int argc, char **argv) {
 
     program_path = argv[index];
     program_args = argv + index;
-    err = execvpe(program_path, program_args, envp);
+    err = execve(program_path, program_args, envp);
     if (err) {
         perror(program_path);
         logerror("could not exec: %s", program_path);

@@ -1,7 +1,7 @@
 CC=cc
 AR=ar
 OPT=-O2
-STD=-std=gnu99
+STD=-std=gnu18
 LDFLAGS=-lseccomp
 WARNING=-Werror -Wall -Wextra -Wpedantic -Wfloat-equal -Wundef -Wshadow \
 		-Wpointer-arith -Wcast-align -Wstrict-prototypes -Wmissing-prototypes \

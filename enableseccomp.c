@@ -1,6 +1,7 @@
 #include <seccomp.h>
 #include <stdio.h>
 
+#include "banned.h"
 #include "enableseccomp.h"
 
 static const int ALLOWED_SYSCALLS[] = {SCMP_SYS(access),
