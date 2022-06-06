@@ -130,7 +130,9 @@ int main(int argc, char **argv) {
     err = chroot(root);
     if (err) {
         perror(root);
-        logerror("could not chroot to: '%s' (are you root?)", root);
+        logerror("could not chroot to: '%s' (are you root? does the directory "
+                 "exist?)",
+                 root);
         exit(EXIT_FAILURE);
     }
 
