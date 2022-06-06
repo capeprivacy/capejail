@@ -17,7 +17,7 @@ static void print_usage(void) {
             "%s: enable a secure compute environment in a jail that blocks "
             "certain syscalls\n"
             "usage:\n"
-            "\t%s -u USER -r CHROOT [-d DIRECTORY] [-I] -- PROGRAM [ARGS]\n\n"
+            "\t%s [OPTION] -- PROGRAM [ARGS]\n\n"
             "\t-d\tdirectory to start in within jail\n\n"
             "\t-r\tpath to chroot directory to use in jail\n\n"
             "\t-u\tuser to run as within the jail\n\n"
@@ -54,8 +54,9 @@ static void logerror(const char *fmt, ...) {
 static int parse_opts(int argc, char **argv, char **root, char **user,
                       const char **directory, bool *insecure_mode) {
     int c;
-    if (!root || !user) {
-        logerror("parse_opts got null pointer for root and/or user");
+    if (!root || !user || !directory) {
+        logerror("parse_opts got null pointer for root and/or user and/or "
+                 "directory");
         return -1;
     }
     while ((c = getopt(argc, argv, "Ihr:u:d:")) != -1) {
@@ -79,10 +80,6 @@ static int parse_opts(int argc, char **argv, char **root, char **user,
             return -1;
         }
     }
-    if (!*root || !*user) {
-        logerror("-r and -u are required arguments");
-        return -1;
-    }
     if (optind >= argc) {
         logerror("no program specified");
         return -1;
@@ -100,9 +97,10 @@ int main(int argc, char **argv) {
     char *user = NULL;
     const char *directory = "/";
     char *envp[2];
-    uid_t uid;
     struct passwd *user_data = NULL;
     bool insecure_mode = false;
+    uid_t uid = getuid();
+    char *ps1 = NULL;
 
     program_name = argv[0];
 
@@ -112,42 +110,70 @@ int main(int argc, char **argv) {
         exit(EXIT_FAILURE);
     }
 
-    user_data = getpwnam(user);
-    if (!user_data) {
-        perror(user);
-        logerror("failed to lookup user: '%s'", user);
-        exit(EXIT_FAILURE);
+    if (user) {
+        user_data = getpwnam(user);
+        if (!user_data) {
+            perror(user);
+            logerror("failed to lookup user: '%s'", user);
+            exit(EXIT_FAILURE);
+        }
+        uid = user_data->pw_uid;
     }
 
-    uid = user_data->pw_uid;
-    if (uid == 0) {
-        envp[0] = strdup("PS1=[jail]# ");
-    } else {
-        envp[0] = strdup("PS1=[jail]$ ");
-    }
-    envp[1] = NULL;
-
-    err = chroot(root);
-    if (err) {
-        perror(root);
-        logerror("could not chroot to: '%s' (are you root? does the directory "
-                 "exist?)",
-                 root);
-        exit(EXIT_FAILURE);
+    if (root) {
+        err = chroot(root);
+        if (err) {
+            perror(root);
+            logerror(
+                "could not chroot to: '%s' (are you root? does the directory "
+                "exist?)",
+                root);
+            exit(EXIT_FAILURE);
+        }
     }
 
-    err = chdir(directory);
-    if (err) {
-        perror(directory);
-        logerror("could not change directory to '%s'", directory);
-        exit(EXIT_FAILURE);
+    if (directory) {
+        err = chdir(directory);
+        if (err) {
+            perror(directory);
+            logerror("could not change directory to '%s'", directory);
+            exit(EXIT_FAILURE);
+        }
     }
 
-    err = setuid(uid);
-    if (err) {
-        perror(user);
-        logerror("could not setuid to: '%d'", uid);
-        exit(EXIT_FAILURE);
+    if (user && (uid != 0)) {
+        /* non-root user */
+        err = setuid(uid);
+        if (err) {
+            perror("setuid");
+            logerror("could not setuid to: '%d'", uid);
+            exit(EXIT_FAILURE);
+        }
+
+    } else if (user && (uid == 0)) {
+        /* root user */
+        err = setuid(uid);
+        if (err) {
+            perror("setuid");
+            logerror("could not setuid to: '%d' (are you root?)", uid);
+            exit(EXIT_FAILURE);
+        }
+
+        ps1 = strdup("PS1=[jail]# ");
+        if (!ps1) {
+            perror("out of memory");
+            logerror("out of memory");
+            exit(EXIT_FAILURE);
+        }
+    }
+
+    if (!ps1) {
+        ps1 = strdup("PS1=[jail]$ ");
+        if (!ps1) {
+            perror("out of memory");
+            logerror("out of memory");
+            exit(EXIT_FAILURE);
+        }
     }
 
     if (!insecure_mode) {
@@ -158,6 +184,8 @@ int main(int argc, char **argv) {
         }
     }
 
+    envp[0] = ps1;
+    envp[1] = NULL;
     program_path = argv[index];
     program_args = argv + index;
     err = execvpe(program_path, program_args, envp);
