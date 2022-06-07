@@ -6,7 +6,7 @@ LDFLAGS=-lseccomp
 WARNING=-Werror -Wall -Wextra -Wpedantic -Wfloat-equal -Wundef -Wshadow \
 		-Wpointer-arith -Wcast-align -Wstrict-prototypes -Wmissing-prototypes \
 		-Wstrict-overflow=5 -Wwrite-strings -Waggregate-return -Wcast-qual \
-		-Wswitch-enum -Wunreachable-code -Wformat -Wformat-security
+		-Wswitch-enum -Wunreachable-code -Wformat -Wformat-security -Wvla \
 
 FLAGS=-fstack-protector-all -fPIC -pipe -fcf-protection
 CFLAGS=$(WARNING) $(STD) $(OPT) $(FLAGS)
