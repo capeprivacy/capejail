@@ -141,21 +141,11 @@ int main(int argc, char **argv) {
         }
     }
 
-    if (user && (uid != 0)) {
-        /* non-root user */
+    if (user) {
         err = setuid(uid);
         if (err) {
             perror("setuid");
             logerror("could not setuid to: '%d'", uid);
-            exit(EXIT_FAILURE);
-        }
-
-    } else if (user && (uid == 0)) {
-        /* root user */
-        err = setuid(uid);
-        if (err) {
-            perror("setuid");
-            logerror("could not setuid to: '%d' (are you root?)", uid);
             exit(EXIT_FAILURE);
         }
     }
