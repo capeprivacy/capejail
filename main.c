@@ -54,9 +54,9 @@ static void logerror(const char *fmt, ...) {
 static int parse_opts(int argc, char **argv, char **root, char **user,
                       const char **directory, bool *insecure_mode) {
     int c;
-    if (!root || !user || !directory) {
+    if (!root || !user || !directory || !insecure_mode) {
         logerror("parse_opts got null pointer for root and/or user and/or "
-                 "directory");
+                 "directory and/or insecure_mode");
         return -1;
     }
     while ((c = getopt(argc, argv, "Ihr:u:d:")) != -1) {
@@ -158,22 +158,13 @@ int main(int argc, char **argv) {
             logerror("could not setuid to: '%d' (are you root?)", uid);
             exit(EXIT_FAILURE);
         }
-
-        ps1 = strdup("PS1=[jail]# ");
-        if (!ps1) {
-            perror("out of memory");
-            logerror("out of memory");
-            exit(EXIT_FAILURE);
-        }
     }
 
+    ps1 = strdup((uid == 0) ? "PS1=[jail]# " : "PS1=[jail]$ ");
     if (!ps1) {
-        ps1 = strdup("PS1=[jail]$ ");
-        if (!ps1) {
-            perror("out of memory");
-            logerror("out of memory");
-            exit(EXIT_FAILURE);
-        }
+        perror("out of memory");
+        logerror("out of memory");
+        exit(EXIT_FAILURE);
     }
 
     if (!insecure_mode) {
