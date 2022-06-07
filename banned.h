@@ -10,6 +10,10 @@
 
 #define BANNED(func) sorry_##func##_is_a_banned_function
 
+/*
+ * Original linux list of banned functions
+ * https://github.com/git/git/blob/master/banned.h
+ */
 #undef strcpy
 #define strcpy(x, y) BANNED(strcpy)
 #undef strcat
@@ -36,5 +40,13 @@
 #define asctime(t) BANNED(asctime)
 #undef asctime_r
 #define asctime_r(t, buf) BANNED(asctime_r)
+
+/*
+ * Additional banned functions that are not banned in Linux
+ */
+
+/* alloca commonly allocates on the stack */
+#undef alloca
+#define alloca(x) BANNED(alloca)
 
 #endif /* BANNED_H */
