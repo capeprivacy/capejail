@@ -1,4 +1,5 @@
 #define _GNU_SOURCE
+#include <grp.h>
 #include <pwd.h>
 #include <stdarg.h>
 #include <stdbool.h>
@@ -142,6 +143,27 @@ int main(int argc, char **argv) {
     }
 
     if (user) {
+        /*
+         * Drop root privledges:
+         * https://wiki.sei.cmu.edu/confluence/display/c/POS36-C.+Observe+correct+revocation+order+while+relinquishing+privileges
+         */
+        const gid_t list[] = {uid};
+        const size_t len = sizeof(list) / sizeof(*list);
+
+        err = setgroups(len, list);
+        if (err) {
+            perror("setgroups");
+            logerror("could not setgroups to: '%d'", uid);
+            exit(EXIT_FAILURE);
+        }
+
+        err = setgid(uid);
+        if (err) {
+            perror("setgid");
+            logerror("could not setgid to: '%d'", uid);
+            exit(EXIT_FAILURE);
+        }
+
         err = setuid(uid);
         if (err) {
             perror("setuid");
