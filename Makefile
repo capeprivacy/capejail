@@ -1,5 +1,4 @@
 CC=cc
-AR=ar
 OPT=-O2
 STD=-std=gnu18
 LDFLAGS=-lseccomp
@@ -8,8 +7,12 @@ WARNING=-Werror -Wall -Wextra -Wpedantic -Wfloat-equal -Wundef -Wshadow \
 		-Wstrict-overflow=5 -Wwrite-strings -Waggregate-return -Wcast-qual \
 		-Wswitch-enum -Wunreachable-code -Wformat -Wformat-security -Wvla \
 
-FLAGS=-fstack-protector-all -fPIC -pipe -fcf-protection
+FLAGS=-fstack-protector-all -fPIE -pipe -fcf-protection
 CFLAGS=$(WARNING) $(STD) $(OPT) $(FLAGS)
+
+SRC = $(wildcard *.c)
+HEADERS = $(wildcard *.h)
+OBJS = $(patsubst %.c,%.o,$(SRC))
 
 .PHONY: release
 release: OPT=-O2 -D_FORTIFY_SOURCE=2
@@ -24,22 +27,13 @@ sanitize: OPT=-O0 -ggdb3 -fsanitize=address,undefined,leak
 sanitize: all
 
 .PHONY: all
-all: capejail libenableseccomp.so libenableseccomp.a
+all: capejail
 
-capejail: libenableseccomp.a main.o
-	$(CC) -o capejail main.o libenableseccomp.a $(CFLAGS) $(LDFLAGS)
+capejail: $(OBJS)
+	$(CC) -o capejail $(OBJS) $(CFLAGS) $(LDFLAGS)
 
-main.o: main.c enableseccomp.h
-	$(CC) -c main.c $(CFLAGS)
-
-enableseccomp.o: enableseccomp.c enableseccomp.h
-	$(CC) -c enableseccomp.c $(CFLAGS)
-
-libenableseccomp.so: enableseccomp.o
-	$(CC) -shared -o libenableseccomp.so $(CFLAGS) enableseccomp.o
-
-libenableseccomp.a: enableseccomp.o
-	$(AR) rcs -o  libenableseccomp.a enableseccomp.o
+%.o: %.c $(HEADERS)
+	$(CC) -c $< -o $@ $(CFLAGS)
 
 .PHONY: lint
 lint:
