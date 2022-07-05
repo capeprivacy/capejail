@@ -86,6 +86,7 @@ static const int ALLOWED_SYSCALLS[] = {
     SCMP_SYS(wait4),
     SCMP_SYS(writev),
     SCMP_SYS(write),
+    SCMP_SYS(sched_getaffinity),
 };
 
 enum {
