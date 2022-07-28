@@ -96,6 +96,31 @@ use it.
 
 Probably no good reason for user code to unload kernel modules.
 
+### finit_module
+
+User code probably shouldn't be loading kernel modules.
+
+### fsconfig
+
+Literally no man pages for this syscall. Syscall number 431 in asm/unistd_64.h
+on AMD64 Linux.
+
+### fsmount
+
+Literally no man pages for this syscall.
+
+### fsopen
+
+Literally no man pages for this syscall.
+
+### fspick
+
+Literally no man pages for this syscall.
+
+### fstatfs
+
+Users probably don't need filesystem information.
+
 ## Allowed
 
 ### access
@@ -139,7 +164,7 @@ Put the thread to sleep with nanosecond precision.
 
 ### clone
 
-The Linux way of doing fork(2), but with more options and better performance.
+The Linux way of doing [fork](#fork), but with more options and better performance.
 
 ### __clone2
 
@@ -264,3 +289,43 @@ See [fanotify_init](#fanotify_init)
 ### fchdir
 
 Change working directory. See [chdir](#chdir)
+
+### fcntl
+
+Toolbox for manipulating a file descriptor.
+
+### fdatasync
+
+See [fsync](#fsync)
+
+### fgetxattr
+
+Get extended attributes for file descriptor.
+
+### flistxattr
+
+List extended attributes for file descriptor.
+
+### flock
+
+Place or remove a lock on a file.
+
+### fork
+
+Create a child process. Mostly replaced by [clone](#clone).
+
+### fremovexattr
+
+Remove extended file attributes.
+
+### fsetxattr
+
+Set the value of extended file attributes.
+
+### fstat
+
+Get file status.
+
+### fsync
+
+Sync data to disk (with caveats that disk vendors often lie about fsync).
