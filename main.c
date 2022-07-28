@@ -123,7 +123,7 @@ int main(int argc, char **argv) {
     if (user) {
         user_data = getpwnam(user);
         if (!user_data) {
-            perror(user);
+            perror("getpwnam");
             logerror("failed to lookup user: '%s'", user);
             exit(EXIT_FAILURE);
         }
@@ -133,7 +133,7 @@ int main(int argc, char **argv) {
     if (root) {
         err = chroot(root);
         if (err) {
-            perror(root);
+            perror("chroot");
             logerror(
                 "could not chroot to: '%s' (are you root? does the directory "
                 "exist?)",
@@ -146,7 +146,7 @@ int main(int argc, char **argv) {
     if (directory) {
         err = chdir(directory);
         if (err) {
-            perror(directory);
+            perror("chdir");
             logerror("could not change directory to '%s'", directory);
             exit(EXIT_FAILURE);
         }
@@ -184,7 +184,7 @@ int main(int argc, char **argv) {
 
     ps1 = strdup((uid == 0) ? "PS1=[jail]# " : "PS1=[jail]$ ");
     if (!ps1) {
-        perror("out of memory");
+        perror("strdup");
         logerror("out of memory");
         exit(EXIT_FAILURE);
     }
