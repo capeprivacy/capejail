@@ -121,6 +121,29 @@ Literally no man pages for this syscall.
 
 Users probably don't need filesystem information.
 
+### futimesat
+
+Obsolete system call.
+
+### futex_waitv
+
+Not intentionally blocked, but this is a new syscall that currently doesn't
+compile with the version of libseccomp that I have. The plan is to allow this
+once libseccomp supports it.
+
+See [futex](#futex)
+
+### getdents
+
+Get directory entries. The man pages lead users away from using this syscall
+directly.
+
+> DESCRIPTION
+>
+>       These are not the interfaces you are interested in.  Look at readdir(3)
+>       for the POSIX-conforming C library interface.  This page documents  the
+>       bare kernel system call interfaces.
+
 ## Allowed
 
 ### access
@@ -329,3 +352,15 @@ Get file status.
 ### fsync
 
 Sync data to disk (with caveats that disk vendors often lie about fsync).
+
+### ftruncate
+
+Shrink a file to the given size in bytes.
+
+### futex
+
+User space lock.
+
+### getcpu
+
+Identify which CPU the thread is running on.
