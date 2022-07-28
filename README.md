@@ -24,6 +24,9 @@ seeing other processes and devices that it should not have access to. While
 Linux Namespaces are commonly used to achieve this, it has been found that
 we do not have access to configuring namespaces while in the Nitro Enclave.
 
+For a comprehensive list of why certain syscalls are blocked, please see
+[SYSCALLS.md](https://github.com/capeprivacy/capejail/SYSCALLS.md).
+
 ## Usage
 ```
 $ capejail -h
