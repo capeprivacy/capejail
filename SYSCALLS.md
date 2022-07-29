@@ -96,6 +96,14 @@ use it.
 
 Probably no good reason for user code to unload kernel modules.
 
+### epoll_pwait2
+
+Not intentionally blocked, but this is a new syscall that currently doesn't
+compile with the version of libseccomp used in the container. The plan is to
+allow this once libseccomp supports it.
+
+See [epoll_create](#epoll_create).
+
 ### finit_module
 
 User code probably shouldn't be loading kernel modules.
@@ -128,21 +136,20 @@ Obsolete system call.
 ### futex_waitv
 
 Not intentionally blocked, but this is a new syscall that currently doesn't
-compile with the version of libseccomp that I have. The plan is to allow this
-once libseccomp supports it.
+compile with the version of libseccomp used in the container. The plan is to
+allow this once libseccomp supports it.
 
 See [futex](#futex)
 
-### getdents
+### get_kernel_syms
 
-Get directory entries. The man pages lead users away from using this syscall
-directly.
+Retrieve exported kernel and module symbols. Users probably don't need to do
+anything with kernel modules.
 
-> DESCRIPTION
->
->       These are not the interfaces you are interested in.  Look at readdir(3)
->       for the POSIX-conforming C library interface.  This page documents  the
->       bare kernel system call interfaces.
+### getpmsg
+
+Unimplemented system call. This system call is not implemented in the Linux
+kernel, and always returns -1.
 
 ## Allowed
 
@@ -246,10 +253,6 @@ See [epoll_create](#epoll_create).
 See [epoll_create](#epoll_create).
 
 ### epoll_pwait
-
-See [epoll_create](#epoll_create).
-
-### epoll_pwait2
 
 See [epoll_create](#epoll_create).
 
@@ -364,3 +367,51 @@ User space lock.
 ### getcpu
 
 Identify which CPU the thread is running on.
+
+### getdents
+
+Get directory entries.
+
+### getdents64
+
+See [getdents](#getdents)
+
+### geteuid
+
+Get effective user id
+
+### getegid
+
+Get effective group id
+
+### getgid
+
+Get real group id
+
+### getgroups
+
+Get groups
+
+### getitimer
+
+Get timer
+
+### get_mempolicy
+
+Retrieve NUMA memory policy for a thread.
+
+### getpeername
+
+Get name of connected peer socket.
+
+### getpgid
+
+Get process group.
+
+### getpgrp
+
+See [getpgid](#getpgid)
+
+### getpid
+
+Get process ID.
