@@ -126,7 +126,7 @@ enum {
     NUM_SYSCALLS = sizeof(ALLOWED_SYSCALLS) / sizeof(*ALLOWED_SYSCALLS)
 };
 
-int enable_seccomp(void) {
+int cape_enable_seccomp(void) {
     scmp_filter_ctx ctx = NULL;
     int err = 0;
 

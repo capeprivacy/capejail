@@ -190,7 +190,7 @@ int main(int argc, char **argv) {
     }
 
     if (!insecure_mode) {
-        err = enable_seccomp();
+        err = cape_enable_seccomp();
         if (err) {
             logerror("could not enable seccomp");
             exit(EXIT_FAILURE);
