@@ -104,7 +104,7 @@ allow this once libseccomp supports it.
 
 See [epoll_create](#epoll_create).
 
-### finit_module
+### finit_module ⚠️
 
 User code probably shouldn't be loading kernel modules.
 
@@ -150,6 +150,40 @@ anything with kernel modules.
 
 Unimplemented system call. This system call is not implemented in the Linux
 kernel, and always returns -1.
+
+### init_module
+
+Initialize a kernel module. A user function shouldn't need to do this.
+
+### ioperm
+
+Set port IO permissions. Turning on requires CAP_SYS_RAWIO permissions.
+
+### io_pgetevents
+
+No man pages for this syscall.
+
+### iopl
+
+Similar to [ioperm](#ioperm), but this one is deprecated due to it being a lot
+slower than ioprem.
+
+### kcmp
+
+Compare if two processes share kernel resources such as virtual memory,
+file descriptors, etc. Requires the same privileges as ptrace.
+
+### kexec_file_load ️⚠️
+
+Load a new kernel that will run on reboot.
+
+### kexec_load ⚠️
+
+See [kexec_file_load](#kexec_file_load)
+
+### keyctl
+
+Manage kernel keyring.
 
 ## Allowed
 
@@ -415,3 +449,131 @@ See [getpgid](#getpgid)
 ### getpid
 
 Get process ID.
+
+### getppid
+
+Get process ID of parent process.
+
+### getpriority
+
+Get scheduling priority.
+
+### getrandom
+
+Fill a buffer with random bytes.
+
+### getresuid
+
+Get real, effective, and saved group IDs
+
+### getresuid
+
+Get real, effective, and saved user IDs
+
+### getrlimit
+
+Get resource limits
+
+### get_robust_list
+
+Get list of robust futexes.
+
+### getrusage
+
+Get resource usage.
+
+### getsid
+
+Get session ID.
+
+### getsockname
+
+Get the address that the socket file descriptor is bound to.
+
+### getsockopt
+
+Get options on socket.
+
+### get_thread_area
+
+Get thread local storage information.
+
+### gettid
+
+Get thread ID.
+
+### gettimeofday
+
+Get time of day.
+
+### getuid
+
+Get User ID of process.
+
+### getxattr
+
+Get extended attribute value.
+
+### inotify_add_watch
+
+Part of the inotify API to monitor files and directories.
+
+### inotify_init
+
+See [inotify_add_watch](#inotify_add_watch)
+
+### inotify_init1
+
+See [inotify_add_watch](#inotify_add_watch)
+
+### inotify_rm_watch
+
+See [inotify_add_watch](#inotify_add_watch)
+
+### io_cancel
+
+Cancel an IO operation.
+
+### ioctl
+
+Control an IO device.
+
+### io_destroy
+
+Destroy an IO context.
+
+### io_getevents
+
+Read asynchronous I/O events from the completion queue
+
+### ioprio_get
+
+Get IO scheduling priority.
+
+### ioprio_set
+
+Set the scheduling priority of the calling process.
+
+### io_setup
+
+Create an async IO context.
+
+### io_setup
+
+See [io_setup](#io_setup)
+
+### io_submit
+
+See [io_setup](#io_setup)
+
+### io_uring_enter
+
+See [io_setup](#io_setup)
+
+### io_uring_register
+
+See [io_setup](#io_setup)
+
+### io_uring_setup
+
+See [io_setup](#io_setup)
