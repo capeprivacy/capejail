@@ -78,7 +78,7 @@ int main(int argc, char **argv) {
     err = cape_logger_init(argv[0]);
     if (err) {
         fprintf(stderr, "failed to initialize logger\n");
-        return err;
+        exit(EXIT_FAILURE);
     }
 
     index = parse_opts(argc, argv, &root, &user, &directory, &insecure_mode);
@@ -174,5 +174,6 @@ int main(int argc, char **argv) {
         cape_log_error("could not exec: %s", program_path);
         exit(EXIT_FAILURE);
     }
+    cape_logger_destroy();
     return err;
 }

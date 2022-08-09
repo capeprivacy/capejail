@@ -1,9 +1,11 @@
 #include <stdarg.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "logger.h"
 
-static const char *PROGRAM_NAME = NULL;
+static char *PROGRAM_NAME = NULL;
 
 void cape_print_usage(void) {
     fprintf(
@@ -43,6 +45,23 @@ void cape_log_error(const char *fmt, ...) {
 }
 
 int cape_logger_init(const char *program_name) {
-    PROGRAM_NAME = program_name;
+    int err = 0;
+
+    PROGRAM_NAME = strdup(program_name);
+    if (!PROGRAM_NAME) {
+        perror("strdup");
+        fprintf(stderr, "failed to allocate memory in logger\n");
+        err = -1;
+        goto fail;
+    }
+
     return 0;
+
+fail:
+    free(PROGRAM_NAME);
+    return err;
+}
+
+void cape_logger_destroy(void) {
+    free(PROGRAM_NAME);
 }
