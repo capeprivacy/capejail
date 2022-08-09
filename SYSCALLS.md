@@ -221,6 +221,40 @@ within the enclave, possibly spoofing sentinel.
 
 Set the NUMA policy, requires CAP_SYS_NICE for certain flags.
 
+### migrate_pages
+
+Move all pages in another process to another set of nodes. I'm suspicious of
+something that can affect memory of other processes, so for now we're blocking
+this one.
+
+### mknod ⚠️
+
+Create special files, e.g., the files that can be found within `/dev`. One of
+the goals of `capejail` is to block access to certain special files such as
+`/dev/nsm`. We want to be sure that a malicious process will not be able to
+create these files itself.
+
+### mknodat ⚠️
+
+See [mknod](#mknod)
+
+### mount
+
+Attach a filesystem to a target path. User's probably won't need to mount any
+filesystems.
+
+### mount_setattr
+
+See [mount](#mount)
+
+### move_mount
+
+No manpage entries.
+
+### move_pages
+
+See [migrate_pages](#migrate_pages)
+
 ## Allowed
 
 ### access
@@ -230,7 +264,7 @@ Check user's permissions for a file.
 ### alarm
 
 Sends a SIGALRM signal to the calling process after a number of seconds. Sleep
-may be implemented using alarm in some libraries.
+could possibly be implemented using alarm in some libraries.
 
 ### arch_prctl
 
@@ -657,3 +691,56 @@ Get file status.
 
 Inform the kernel of which address ranges the process will be used for
 performance improvements.
+
+### membarrier
+
+Issue memory barriers on a set of threads
+
+### memfd_create
+
+Create a memory backed file.
+
+### memfd_secret
+
+Create a memory region only visible to the calling process.
+See the [Phoronix article](https://www.phoronix.com/news/Linux-5.14-memfd_secret)
+for details.
+
+### mincore
+
+Determine whether pages are resident in memory.
+
+### mkdir
+
+Create a directory.
+
+### mkdirat
+
+See [mkdir](#mkdir)
+
+### mlock
+
+Lock pages in memory, and keep them from getting swapped out.
+
+### mlock2
+
+See [mlock](#mlock)
+
+### mlockall
+
+See [mlock](#mlock)
+
+### mmap
+
+Create a new mapping in virtual memory. Can map files into memory segments, or
+can be used to allocate physical memory to a virtual memory address space. Often
+malloc implementations use mmap.
+
+### modify_ldt
+
+Modify the local describtor table for the calling process.
+
+### mprotect
+
+Change the access protections for the calling process's memory at a given
+address range. Needed by many common programs.

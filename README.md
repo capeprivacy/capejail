@@ -20,9 +20,9 @@ be used to escape the jail.
 The chroot environment can be customized to the level of security desired.
 For example, by restricting access to `/proc` and certain devices in `/dev/`
 AND running the jail as a non-root user, you can keep the jailed user from
-seeing other processes and devices that it should not have access to. While
-Linux Namespaces are commonly used to achieve this, it has been found that
-we do not have access to configuring namespaces while in the Nitro Enclave.
+tampering with other processes and devices. While Linux Namespaces are commonly
+used to achieve this, it has been found that we do not have access to
+configuring namespaces while in the Nitro Enclave.
 
 For a comprehensive list of why certain syscalls are blocked, please see
 [SYSCALLS.md](https://github.com/capeprivacy/capejail/SYSCALLS.md).
