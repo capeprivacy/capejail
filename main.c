@@ -26,8 +26,10 @@ static int parse_opts(
 ) {
     int c;
     if (!root || !user || !directory || !insecure_mode) {
-        cape_log_error("parse_opts got null pointer for root and/or user and/or "
-                 "directory and/or insecure_mode");
+        cape_log_error(
+            "parse_opts got null pointer for root and/or user and/or "
+            "directory and/or insecure_mode"
+        );
         return -1;
     }
     while ((c = getopt(argc, argv, "Ihr:u:d:")) != -1) {
