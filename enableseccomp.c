@@ -3,6 +3,7 @@
 
 #include "banned.h"
 #include "enableseccomp.h"
+#include "logger.h"
 
 static const int ALLOWED_SYSCALLS[] = {
     SCMP_SYS(access),
@@ -159,7 +160,7 @@ int cape_enable_seccomp(void) {
     ctx = seccomp_init(SCMP_ACT_KILL); /* default action: kill */
     if (ctx == NULL) {
         err = -1;
-        fprintf(stderr, "failed to initialize seccomp");
+        cape_log_error("failed to initialize seccomp");
         goto cleanup;
     }
 
@@ -167,9 +168,8 @@ int cape_enable_seccomp(void) {
         const int the_syscall = ALLOWED_SYSCALLS[i];
         err = seccomp_rule_add(ctx, SCMP_ACT_ALLOW, the_syscall, 0);
         if (err) {
-            fprintf(
-                stderr,
-                "failed to add seccomp rule for syscall number: %d\n",
+            cape_log_error(
+                "failed to add seccomp rule for syscall number: %d",
                 the_syscall
             );
             goto cleanup;
@@ -178,7 +178,7 @@ int cape_enable_seccomp(void) {
 
     err = seccomp_load(ctx);
     if (err) {
-        fprintf(stderr, "failed to load seccomp\n");
+        cape_log_error("failed to load seccomp");
         goto cleanup;
     }
 
