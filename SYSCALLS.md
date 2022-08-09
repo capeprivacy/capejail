@@ -185,6 +185,42 @@ See [kexec_file_load](#kexec_file_load)
 
 Manage kernel keyring.
 
+### landlock_add_rule
+
+No man page entries, so defaulting to blocking.
+
+### landlock_create_ruleset
+
+No man page entries, so defaulting to blocking.
+
+### landlock_restrict_self
+
+No man page entries, so defaulting to blocking.
+
+### lchown
+
+See [chown](#chown)
+
+### link
+
+Hard links that lead outside of the chroot are a way of escaping a chroot jail.
+Since the process is already jailed, I'm not aware of a way for this to be
+exploited, I also don't think that it will have any value to user functions, so
+I will block it out of an abundance of caution.
+
+### linkat
+
+See [link](#link)
+
+### listen
+
+Listen for a connection on a socket. Could be used to run a webserver from
+within the enclave, possibly spoofing sentinel.
+
+### mbind
+
+Set the NUMA policy, requires CAP_SYS_NICE for certain flags.
+
 ## Allowed
 
 ### access
@@ -577,3 +613,47 @@ See [io_setup](#io_setup)
 ### io_uring_setup
 
 See [io_setup](#io_setup)
+
+### kill
+
+Send a signal to a process. We can't really get away from signaling processes,
+and even if the user program manages to get root, it couldn't leak private
+information by killing other processes, so there is little risk to allow the
+kill system call.
+
+### lgetxattr
+
+See [getxattr](#getxattr)
+
+### listxattr
+
+List extended attributes
+
+### llistxattr
+
+See [listxattr](#listxattr)
+
+### lookup_dcookie
+
+Lookup path of directory entry.
+
+### lremovexattr
+
+Remove an extended attribute.
+
+### lseek
+
+Seek to a location in a file.
+
+### lsetxattr
+
+Set extended attributes.
+
+### lstat
+
+Get file status.
+
+### madvise
+
+Inform the kernel of which address ranges the process will be used for
+performance improvements.
