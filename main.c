@@ -174,6 +174,6 @@ int main(int argc, char **argv) {
         cape_log_error("could not exec: %s", program_path);
         exit(EXIT_FAILURE);
     }
-    cape_logger_destroy();
+    cape_logger_shutdown();
     return err;
 }

@@ -62,6 +62,6 @@ fail:
     return err;
 }
 
-void cape_logger_destroy(void) {
+void cape_logger_shutdown(void) {
     free(PROGRAM_NAME);
 }
