@@ -126,6 +126,7 @@ static const int ALLOWED_SYSCALLS[] = {
     SCMP_SYS(openat),
     SCMP_SYS(pipe),
     SCMP_SYS(pipe2),
+    SCMP_SYS(poll),
     SCMP_SYS(prctl),
     SCMP_SYS(pread64),
     SCMP_SYS(prlimit64),
