@@ -255,6 +255,76 @@ No manpage entries.
 
 See [migrate_pages](#migrate_pages)
 
+### nfsservctl
+
+Interface with NFS daemon. This system call no longer exists in Linux since
+version 3.1.
+
+### open_tree
+
+No man pages.
+
+### perf_event_open
+
+Performance monitoring. Can be used to spy on other processes.
+
+### pidfd_getfd
+
+Gets a duplicate file descriptor of another processes file descriptor. Requres
+ptrace.
+
+See [here](https://www.phoronix.com/news/Linux-5.6-pidfd-getgd)
+
+### pidfd_open
+
+See [pidfd_getfd](#pidfd_getfd)
+
+### pivot_root
+
+Change the root mount.
+
+### process_mrelease
+
+Fairly new system call that is not yet available in the libseccomp version
+used in the container. Should be safe to allow when we upgrade the container.
+
+### process_vm_readv
+
+Transfer data between address spaces.
+
+### process_vm_writev
+
+Transfer data between address spaces.
+
+### ptrace ⚠️.
+
+Allows caller to observe the target process. Can be used to extract memory
+from any other process.
+
+### putpmsg
+
+This syscall is not implemented.
+
+### query_module
+
+User code probably shouldn't need to worry about kernel module.
+
+### quotactl
+
+Manipulate disk quotas
+
+### quotactl_fd
+
+See [quotactl](#quotactl)
+
+### reboot
+
+Reboot the system.
+
+### request_key
+
+Request a key from the kernel's key management facility.
+
 ## Allowed
 
 ### access
@@ -738,9 +808,246 @@ malloc implementations use mmap.
 
 ### modify_ldt
 
-Modify the local describtor table for the calling process.
+Modify the local descriptor table for the calling process.
 
 ### mprotect
 
 Change the access protections for the calling process's memory at a given
 address range. Needed by many common programs.
+
+### mq_getsetattr
+
+See [mq_open](#mq-open)
+
+### mq_notify
+
+See [mq_open](#mq-open)
+
+### mq_open
+
+Open a message queue.
+
+### mq_timedreceive
+
+See [mq_open](#mq-open)
+
+### mq_timedsend
+
+See [mq_open](#mq-open)
+
+### mq_unlink
+
+Remove a message queue.
+
+### mremap
+
+Expand or shrink an existing memory map. Possibly used by malloc.
+
+### msgctl
+
+Perform control operation on message queue.
+
+### msgget
+
+Get a message queue identifier.
+
+### msgrcv
+
+Receive message from a message queue.
+
+### msgsnd
+
+Send a message on a message queue.
+
+### msync
+
+Synchronize a memory mapped file to disk.
+
+### munlock
+
+See [mlock](#mlock)
+
+### munlockall
+
+See [mlock](#mlock)
+
+### munmap
+
+Unmap a region of memory.
+
+### name_to_handle_at
+
+Get a handle for a pathname.
+
+### nanosleep
+
+High resolution sleep.
+
+### newfstatat
+
+See [fstat](#fstat)
+
+### open
+
+Open and/or create a file.
+
+### openat
+
+See [open](#open)
+
+### openat2
+
+See [open](#open)
+
+### open_by_handle_at
+
+Open a file via a handle.
+
+### pause
+
+Calling process waits for a signal.
+
+### personality
+
+Set which "personality" the process will use.
+
+### pidfd_open
+
+Get a file descriptor to refer to a process.
+
+### pidfd_send_signal
+
+Send a signal to a process as a file descriptor.
+
+### pipe
+
+Create a unidirectional data channel.
+
+### pipe2
+
+See [pipe](#pipe)
+
+### pkey_alloc
+
+Allocate a protection key.
+
+### pkey_free
+
+Free a protection key.
+
+### pkey_mprotect
+
+Set memory protection using pkeys(7).
+
+### poll
+
+Wait for an event on a file descriptor.
+
+### ppoll
+
+See [poll](poll)
+
+### prctl
+
+Manipulate the calling thread/process.
+
+### pread64
+
+Read from an fd at a given offset.
+
+### preadv
+
+Read data into multiple buffers.
+
+### prlimit64
+
+Set resource limits.
+
+### process_madvise
+
+Give advice about use of memory to a process
+
+### pselect6
+
+IO multiplexing.
+
+### pwrite64
+
+Write to an fd at a given offset.
+
+### pwritev
+
+Write data into multiple buffers.
+
+### pwritev2
+
+See [pwritev](#pwritev)
+
+### read
+
+Read from a file descriptor.
+
+### readahead
+
+Initiate file readahead into page cache.
+
+### readlink
+
+Read the value of a symbolic link.
+
+### readlinkat
+
+See [readlink](#readlink)
+
+### readv
+
+Read data into multiple buffers.
+
+### recvfrom
+
+Receive a message from a socket.
+
+### recvmmsg
+
+Receive multiple messages from a socket.
+
+### recvmsg
+
+Receive a message from a socket.
+
+### remap_file_pages
+
+Deprecated, but not harmful. Create a nonlinear file mapping.
+
+### removexattr
+
+Remove an extended attribute
+
+### rename
+
+Change the name or location of a file.
+
+### renameat
+
+See [rename](#rename)
+
+### renameat2
+
+See [rename](#rename)
+
+### restart_syscall
+
+Restart a system call after interruption by a stop signal.
+
+### rmdir
+
+Remove directory.
+
+### rseq
+
+Restartable sequence, see
+[here](https://www.phoronix.com/news/Restartable-Sequences-Speed)
+
+### rt_sigaction
+
+Change the behavior of a signal action.
