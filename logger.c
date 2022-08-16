@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "banned.h"
 #include "logger.h"
 
 static char *PROGRAM_NAME = NULL;
