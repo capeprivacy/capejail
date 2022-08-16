@@ -1051,3 +1051,31 @@ Restartable sequence, see
 ### rt_sigaction
 
 Change the behavior of a signal action.
+
+### rt_sigpending
+
+See [rt_sigaction](#rt-sigaction)
+
+### rt_sigprocmask
+
+See [rt_sigaction](#rt-sigaction)
+
+### rt_sigqueueinfo
+
+See [rt_sigaction](#rt-sigaction)
+
+### rt_sigreturn
+
+See [rt_sigaction](#rt-sigaction)
+
+### rt_sigsuspend
+
+See [rt_sigaction](#rt-sigaction)
+
+### rt_sigtimedwait
+
+See [rt_sigaction](#rt-sigaction)
+
+### rt_tgsigqueueinfo
+
+See [rt_sigaction](#rt-sigaction)
