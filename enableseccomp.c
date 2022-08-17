@@ -181,7 +181,6 @@ static const int ALLOWED_SYSCALLS[] = {
     SCMP_SYS(rt_tgsigqueueinfo),
     SCMP_SYS(rt_sigreturn),
     SCMP_SYS(rseq),
-    SCMP_SYS(sched_getaffinity),
     SCMP_SYS(select),
     SCMP_SYS(setpgid),
     SCMP_SYS(set_robust_list),
