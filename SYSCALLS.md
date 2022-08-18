@@ -1444,3 +1444,7 @@ See [kill](#kill)
 ### truncate
 
 Shrink a file to a given length.
+
+### umask
+
+Used by `open`.
