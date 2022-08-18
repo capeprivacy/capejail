@@ -18,7 +18,6 @@ Particularly dangerous syscalls will be marked with ⚠️.
 - [Blocked](#blocked)
 - [Allowed](#allowed)
 
-
 ## Blocked
 
 ### accept
@@ -86,6 +85,17 @@ See [adjtime](#adjtime).
 ### clock_settime
 
 See [adjtime](#adjtime).
+
+### __clone2
+
+Not intentionally blocked, but because libseccomp does not provide a SCMP_SYS
+macro for `__clone2`, we are not able to allow it.
+
+```
+enableseccomp.c:23:5: error: ‘__SNR___clone2’ undeclared here (not in a function)
+   23 |     SCMP_SYS(__clone2),
+      |     ^~~~~~~~
+```
 
 ### create_module
 
@@ -296,7 +306,7 @@ Transfer data between address spaces.
 
 Transfer data between address spaces.
 
-### ptrace ⚠️.
+### ptrace ⚠️
 
 Allows caller to observe the target process. Can be used to extract memory
 from any other process.
@@ -380,7 +390,67 @@ See [sched_getaffinity](#sched_getaffinity)
 
 We are already using seccomp to restrict syscalls that the user code can make.
 We want to avoid user code being able to potentially exploit subsequent calls
-to seccomp to re-enable previously disabled syscalls.
+to seccomp to re-enable previously disabled syscalls. While I am not aware of
+such an exploit, I don't want to rule it out.
+
+### security
+
+Unimplemented syscall.
+
+### setfsgid
+
+User code probably won't need to set the filesystem group ID.
+
+### setfsuid
+
+User code probably won't need to set the filesystem user ID.
+
+### setgid
+
+Let's avoid a possible exploit of user code trying to change its group ID to
+another user on the system.
+
+### setgroups
+
+Let's avoid a possible exploit of user code trying to change its group
+membership.
+
+### sethostname
+
+User code should not need to change the hostname.
+
+### setns
+
+Move the calling thread into a different namespace. We certainly don't want
+user code to be able to escape its namespace.
+
+### setpgid
+
+User code probably won't need to be changing its process group ID.
+
+### setpriority
+
+Requires CAP_SYS_NICE to be able to get a more favorable priority.
+
+### setregid
+
+User code should not be changing its group ID.
+
+### setresgid
+
+User code should not be changing its group ID.
+
+### setresuid
+
+User code should not be changing its user ID.
+
+### setreuid
+
+User code should not be changing its user ID.
+
+### setrlimit
+
+User code should not be adjusting its resource limits.
 
 ## Allowed
 
@@ -426,10 +496,6 @@ Put the thread to sleep with nanosecond precision.
 ### clone
 
 The Linux way of doing [fork](#fork), but with more options and better performance.
-
-### __clone2
-
-See [clone](#clone).
 
 ### clone3
 
@@ -1136,3 +1202,52 @@ See [rt_sigaction](#rt-sigaction)
 ### rt_tgsigqueueinfo
 
 See [rt_sigaction](#rt-sigaction)
+
+### select
+
+Monitor multiple file descriptors.
+
+### semctl
+
+Control a semaphore.
+
+### semget
+
+Get a semaphore.
+
+### semop
+
+Perform a semaphore operation by ID.
+
+### semtimedop
+
+See [semop](#semop)
+
+### sendfile
+
+Write one file descriptor to another directly through kernel buffers, without
+buffering in user space.
+
+### sendmmsg
+
+Send multiple messages on a socket.
+
+### sendmsg
+
+Send a message on a socket.
+
+### sendto
+
+Send a message on a socket.
+
+### setitimer
+
+Create a timer that sends a signal on an interval.
+
+### set_mempolicy
+
+Set numa policy for a thread and it's children.
+
+### set_robust_list
+
+Set a list of futexes (i.e., user space fast mutexes).
