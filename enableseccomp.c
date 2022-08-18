@@ -196,6 +196,8 @@ static const int ALLOWED_SYSCALLS[] = {
     SCMP_SYS(sendmmsg),
     SCMP_SYS(sendmsg),
     SCMP_SYS(sendto),
+    SCMP_SYS(setitimer),
+    SCMP_SYS(set_mempolicy),
     SCMP_SYS(setpgid),
     SCMP_SYS(set_robust_list),
     SCMP_SYS(set_tid_address),
