@@ -53,25 +53,11 @@ kernel, and always returns -1.
 Berkeley Packet Filter. Used for network packet filtering and for seccomp.
 Neither of which operations should be necessary for user programs to do.
 
-### capget
-
-Get capabilities of calling thread. Unlikely to be useful
-
 ### capset
 
 Set capabilities of calling thread. This syscall can grant the thread privileges
 to make additional syscalls, for example CAP_SYS_CHROOT. Could be used
 maliciously.
-
-### chmod
-
-Set permissions of file. Probably not useful to user code, and could possibly
-(but improbably) be used with chown to exploit setuid.
-
-### chown
-
-Change ownership of a file. Probably not useful to user code, and could possibly
-(but improbably) be used with chmod to exploit setuid.
 
 ### chroot ⚠️
 
@@ -134,10 +120,6 @@ Literally no man pages for this syscall.
 ### fspick
 
 Literally no man pages for this syscall.
-
-### fstatfs
-
-Users probably don't need filesystem information.
 
 ### futimesat
 
@@ -206,10 +188,6 @@ No man page entries, so defaulting to blocking.
 ### landlock_restrict_self
 
 No man page entries, so defaulting to blocking.
-
-### lchown
-
-See [chown](#chown)
 
 ### link
 
@@ -452,6 +430,23 @@ User code should not be changing its user ID.
 
 User code should not be adjusting its resource limits.
 
+### setsockopt
+
+Let's block this to avoid the user running a web server within the enclave.
+
+### settimeofday
+
+Set system time of day. User code should not need to do this.
+
+### setuid
+
+Users should not be able to change their UID. Users code should be restricted
+to the capejail user.
+
+### shutdown
+
+User code should not be able to shutdown the virtual machine.
+
 ## Allowed
 
 ### access
@@ -475,6 +470,18 @@ Bind an address to a socket.
 
 Used to adjust the heap. Mostly obsoleted by mmap, but could be used by a malloc
 implementation.
+
+### capget
+
+Get capabilities of calling thread. Unlikely to be useful
+
+### chmod
+
+Set permissions of file.
+
+### chown
+
+Change ownership of a file.
 
 ### chdir
 
@@ -648,6 +655,10 @@ Set the value of extended file attributes.
 ### fstat
 
 Get file status.
+
+### fstatfs
+
+Get filesystem status.
 
 ### fsync
 
@@ -847,6 +858,10 @@ Send a signal to a process. We can't really get away from signaling processes,
 and even if the user program manages to get root, it couldn't leak private
 information by killing other processes, so there is little risk to allow the
 kill system call.
+
+### lchown
+
+See [chown](#chown)
 
 ### lgetxattr
 
@@ -1251,3 +1266,54 @@ Set numa policy for a thread and it's children.
 ### set_robust_list
 
 Set a list of futexes (i.e., user space fast mutexes).
+
+### setsid
+
+Create a new session.
+
+### set_thread_area
+
+Manipulate thread local storage.
+
+### set_tid_address
+
+Set pointer to thread ID.
+
+### setxattr
+
+Set an extended attribute value.
+
+### shmat
+
+Shared memory operation.
+
+### shmctl
+
+Shared memory operation.
+
+### shmdt
+
+Shared memory operation.
+
+### shmget
+
+Allocate shared memory.
+
+### sigaltstack
+
+Sigaltstack() allows a thread to define a new alternate signal stack and/or
+retrieve the state of an existing alternate signal stack.
+
+### signalfd
+
+Create a file descriptor for accepting signals
+
+### signalfd4
+
+See [signalf](#signalf)
+
+### socket
+
+This system call is needed by bash, so while we would like to restrict programs
+from being able to do external networking, this system call is quite important
+for many programs
