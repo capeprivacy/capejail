@@ -447,6 +447,47 @@ to the capejail user.
 
 User code should not be able to shutdown the virtual machine.
 
+### swapoff
+
+Disable swap area. Users shouldn't need to configure swap.
+
+### swapon
+
+Enable swap area. Users shouldn't need to configure swap.
+
+### symlink
+
+I'm hesitant to allow links in case if there is an exploit to set and follow
+links to escape the chroot jail.
+
+### symlinkat
+
+See [symlink](#symlink)
+
+### sync
+
+Commit file to disk. Shouldn't be necessary.
+
+### sync_file_range
+
+See [sync](#sync)
+
+### syncfs
+
+See [sync](#sync)
+
+### \_sysctl
+
+No longer exists in current kernels, removed with Linux version 5.5.
+
+### syslog
+
+Read from kernel message ring buffer. Users shouldn't need this.
+
+### tuxcall
+
+Unimplemented syscall.
+
 ## Allowed
 
 ### access
@@ -1317,3 +1358,89 @@ See [signalf](#signalf)
 This system call is needed by bash, so while we would like to restrict programs
 from being able to do external networking, this system call is quite important
 for many programs
+
+### socketpair
+
+Create a pair of sockets.
+
+### splice
+
+Move data between two file descriptors.
+
+### stat
+
+Get file status.
+
+### statfs
+
+Get filesystem statistics.
+
+### statx
+
+Get extended file status.
+
+### sysfs
+
+Get filesystem type information.
+
+### sysinfo
+
+Get system information.
+
+### tee
+
+Duplicate pipe contents.
+
+### tgkill
+
+Send a signal to a thread.
+See [kill](#kill)
+
+### time
+
+Get UNIX time in seconds.
+
+### timer_create
+
+Create a per-process timer.
+
+### timer_delete
+
+Delete a per-process timer.
+
+### timerfd_create
+
+Create a timer bound to a file descriptor.
+
+### timerfd_gettime
+
+Get time on a timer fd.
+
+### timerfd_settime
+
+Set time on a timer fd.
+
+### timer_getoverrun
+
+Get overrun count for a POSIX per-process timer
+
+### timer_gettime
+
+Per process get time on a timer.
+
+### timer_settime
+
+Per process set time on a timer.
+
+### times
+
+Get current process times.
+
+### tkill
+
+Send a signal to a thread.
+See [kill](#kill)
+
+### truncate
+
+Shrink a file to a given length.
