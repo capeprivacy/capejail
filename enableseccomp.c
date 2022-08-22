@@ -246,7 +246,7 @@ static const int ALLOWED_SYSCALLS[] = {
     SCMP_SYS(ustat),
     SCMP_SYS(utime),
     SCMP_SYS(utimensat),
-    SCMP_SYS(utims),
+    SCMP_SYS(utimes),
     SCMP_SYS(vfork),
     SCMP_SYS(vhangup),
     SCMP_SYS(vmsplice),
