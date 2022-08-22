@@ -366,10 +366,6 @@ User code should not need to change the hostname.
 Move the calling thread into a different namespace. We certainly don't want
 user code to be able to escape its namespace.
 
-### setpgid
-
-Needed by bash
-
 ### setpriority
 
 Requires CAP_SYS_NICE to be able to get a more favorable priority.
