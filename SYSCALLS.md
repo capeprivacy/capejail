@@ -488,6 +488,18 @@ Read from kernel message ring buffer. Users shouldn't need this.
 
 Unimplemented syscall.
 
+### umount
+
+Unmount a volume. Users should not be umounting volumes from the filesystem.
+
+### umount2
+
+See [umount](#umount)
+
+### vserver
+
+Unimplemented syscall.
+
 ## Allowed
 
 ### access
@@ -1448,3 +1460,71 @@ Shrink a file to a given length.
 ### umask
 
 Used by `open`.
+
+### uname
+
+Get kernel and system information.
+
+### unlink
+
+Needed to delete files.
+
+### unlinkat
+
+See [unlink](#unlink)
+
+### unshare
+
+Disassociate parts of the process execution context
+
+### uselib
+
+Load a shared library.
+
+### userfaultfd
+
+Handle page faults in user space.
+
+### ustat
+
+Get filesystem statistics.
+
+### utime
+
+Change file last access and modification times.
+
+### utimensat
+
+See [utime](#utime)
+
+### utims
+
+See [utime](#utime)
+
+### vfork
+
+Create a child process and block the parent until the child process exits.
+
+### vhangup
+
+Hangup the current terminal.
+
+### vmsplice
+
+Splice user pages to/from a pipe.
+
+### wait4
+
+Wait for process to change state.
+
+### waitid
+
+See [wait4](#wait4)
+
+### write
+
+Write to a file descriptor.
+
+### writev
+
+Write to multiple buffers.
