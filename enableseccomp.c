@@ -293,6 +293,11 @@ static const int ALLOWED_SYSCALLS[] = {
     SCMP_SYS(getcpu),
 
     /*
+     * Get current working directory.
+     */
+    SCMP_SYS(getcwd),
+
+    /*
      * Get directory entries.
      */
     SCMP_SYS(getdents),
@@ -923,8 +928,8 @@ static const int ALLOWED_SYSCALLS[] = {
     SCMP_SYS(rmdir),
 
     /*
-     * Restartable sequence, see
-     * [here](https://www.phoronix.com/news/Restartable-Sequences-Speed)
+     * Restartable sequence, see:
+     * https://www.phoronix.com/news/Restartable-Sequences-Speed
      */
     SCMP_SYS(rseq),
 
@@ -967,6 +972,17 @@ static const int ALLOWED_SYSCALLS[] = {
      * See [rt_sigaction](#rt-sigaction)
      */
     SCMP_SYS(rt_tgsigqueueinfo),
+
+    /*
+     * Numpy looks up scheduling configuration for process.
+     */
+    SCMP_SYS(sched_getaffinity),
+    SCMP_SYS(sched_getattr),
+    SCMP_SYS(sched_getparam),
+    SCMP_SYS(sched_get_priority_max),
+    SCMP_SYS(sched_get_priority_min),
+    SCMP_SYS(sched_getscheduler),
+    SCMP_SYS(sched_rr_get_interval),
 
     /*
      * Monitor multiple file descriptors.
@@ -1025,6 +1041,11 @@ static const int ALLOWED_SYSCALLS[] = {
     SCMP_SYS(set_mempolicy),
 
     /*
+     * Needed by bash.
+     */
+    SCMP_SYS(setpgid),
+
+    /*
      * Set a list of futexes (i.e., user space fast mutexes).
      */
     SCMP_SYS(set_robust_list),
@@ -1074,6 +1095,11 @@ static const int ALLOWED_SYSCALLS[] = {
      * and/or retrieve the state of an existing alternate signal stack.
      */
     SCMP_SYS(sigaltstack),
+
+    /*
+     * Handle a signal.
+     */
+    SCMP_SYS(signal),
 
     /*
      * Create a file descriptor for accepting signals

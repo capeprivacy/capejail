@@ -308,56 +308,25 @@ Reboot the system.
 
 Request a key from the kernel's key management facility.
 
-### sched_getaffinity
-
-It is unlikely that user code will need to do anything with scheduling
-
-### sched_getattr
-
-See [sched_getaffinity](#sched_getaffinity)
-
-### sched_getparam
-
-See [sched_getaffinity](#sched_getaffinity)
-
-### sched_get_priority_max
-
-See [sched_getaffinity](#sched_getaffinity)
-
-### sched_get_priority_min
-
-See [sched_getaffinity](#sched_getaffinity)
-
-### sched_getscheduler
-
-See [sched_getaffinity](#sched_getaffinity)
-
-### sched_rr_get_interval
-
-See [sched_getaffinity](#sched_getaffinity)
-
 ### sched_setaffinity
 
-See [sched_getaffinity](#sched_getaffinity)
+User code probably shouldn't be making changes to process scheduling.
 
 ### sched_setattr
 
-See [sched_getaffinity](#sched_getaffinity)
+See [sched_setaffinity](#sched_setaffinity)
 
 ### sched_setparam
 
-See [sched_getaffinity](#sched_getaffinity)
-
-See [sched_getaffinity](#sched_getaffinity)
-
+See [sched_setaffinity](#sched_setaffinity)
 
 ### sched_setscheduler
 
-See [sched_getaffinity](#sched_getaffinity)
+See [sched_setaffinity](#sched_setaffinity)
 
 ### sched_yield
 
-See [sched_getaffinity](#sched_getaffinity)
+See [sched_setaffinity](#sched_setaffinity)
 
 ### seccomp
 
@@ -399,7 +368,7 @@ user code to be able to escape its namespace.
 
 ### setpgid
 
-User code probably won't need to be changing its process group ID.
+Needed by bash
 
 ### setpriority
 
