@@ -1497,7 +1497,7 @@ Change file last access and modification times.
 
 See [utime](#utime)
 
-### utims
+### utimes
 
 See [utime](#utime)
 
