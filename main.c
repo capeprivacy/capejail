@@ -1,7 +1,6 @@
 #define _GNU_SOURCE
 #include <grp.h>
 #include <pwd.h>
-#include <stdarg.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -10,45 +9,7 @@
 
 #include "banned.h"
 #include "enableseccomp.h"
-
-static char *program_name = NULL;
-
-static void print_usage(void) {
-    fprintf(
-        stderr,
-        "%s: enable a secure compute environment in a jail that blocks "
-        "certain syscalls\n"
-        "usage:\n"
-        "\t%s [OPTION] -- PROGRAM [ARGS]\n\n"
-        "\t-d\tdirectory to start in within jail\n\n"
-        "\t-r\tpath to chroot directory to use in jail\n\n"
-        "\t-u\tuser to run as within the jail\n\n"
-        "\t-I\tinsecure mode, launch with seccomp disabled\n\n"
-        "NOTE: should be run as root or with sudo to allow chroot\n\n",
-        program_name,
-        program_name
-    );
-}
-
-static void logerror(const char *fmt, ...) {
-    va_list args;
-    va_start(args, fmt);
-    fprintf(stderr, "%s: ", program_name);
-
-    /*
-     * clang-tidy has a bug where a false positive warning is thrown for this
-     * exact situation. We will suppress this for now by using "NOLINT" since
-     * this is currently an open bug and not an actual problem with this source
-     * code.
-     *
-     * bug report:
-     * https://bugs.llvm.org/show_bug.cgi?id=41311
-     */
-    vfprintf(stderr, fmt, args); /* NOLINT */
-
-    fprintf(stderr, "\n");
-    va_end(args);
-}
+#include "logger.h"
 
 /*
  * On failure: returns a negative value
@@ -65,8 +26,10 @@ static int parse_opts(
 ) {
     int c;
     if (!root || !user || !directory || !insecure_mode) {
-        logerror("parse_opts got null pointer for root and/or user and/or "
-                 "directory and/or insecure_mode");
+        cape_log_error(
+            "parse_opts got null pointer for root and/or user and/or "
+            "directory and/or insecure_mode"
+        );
         return -1;
     }
     while ((c = getopt(argc, argv, "Ihr:u:d:")) != -1) {
@@ -81,7 +44,7 @@ static int parse_opts(
             *user = optarg;
             break;
         case 'h':
-            print_usage();
+            cape_print_usage();
             exit(EXIT_SUCCESS);
         case 'I':
             *insecure_mode = true;
@@ -91,7 +54,7 @@ static int parse_opts(
         }
     }
     if (optind >= argc) {
-        logerror("no program specified");
+        cape_log_error("no program specified");
         return -1;
     } else {
         return optind;
@@ -112,19 +75,23 @@ int main(int argc, char **argv) {
     uid_t uid = getuid();
     char *ps1 = NULL;
 
-    program_name = argv[0];
+    err = cape_logger_init(argv[0]);
+    if (err) {
+        fprintf(stderr, "failed to initialize logger\n");
+        exit(EXIT_FAILURE);
+    }
 
     index = parse_opts(argc, argv, &root, &user, &directory, &insecure_mode);
     if (index < 0) {
-        print_usage();
+        cape_print_usage();
         exit(EXIT_FAILURE);
     }
 
     if (user) {
         user_data = getpwnam(user);
         if (!user_data) {
-            perror(user);
-            logerror("failed to lookup user: '%s'", user);
+            perror("getpwnam");
+            cape_log_error("failed to lookup user: '%s'", user);
             exit(EXIT_FAILURE);
         }
         uid = user_data->pw_uid;
@@ -133,8 +100,8 @@ int main(int argc, char **argv) {
     if (root) {
         err = chroot(root);
         if (err) {
-            perror(root);
-            logerror(
+            perror("chroot");
+            cape_log_error(
                 "could not chroot to: '%s' (are you root? does the directory "
                 "exist?)",
                 root
@@ -146,8 +113,8 @@ int main(int argc, char **argv) {
     if (directory) {
         err = chdir(directory);
         if (err) {
-            perror(directory);
-            logerror("could not change directory to '%s'", directory);
+            perror("chdir");
+            cape_log_error("could not change directory to '%s'", directory);
             exit(EXIT_FAILURE);
         }
     }
@@ -163,36 +130,36 @@ int main(int argc, char **argv) {
         err = setgroups(len, list);
         if (err) {
             perror("setgroups");
-            logerror("could not setgroups to: '%d'", uid);
+            cape_log_error("could not setgroups to: '%d'", uid);
             exit(EXIT_FAILURE);
         }
 
         err = setgid(uid);
         if (err) {
             perror("setgid");
-            logerror("could not setgid to: '%d'", uid);
+            cape_log_error("could not setgid to: '%d'", uid);
             exit(EXIT_FAILURE);
         }
 
         err = setuid(uid);
         if (err) {
             perror("setuid");
-            logerror("could not setuid to: '%d'", uid);
+            cape_log_error("could not setuid to: '%d'", uid);
             exit(EXIT_FAILURE);
         }
     }
 
     ps1 = strdup((uid == 0) ? "PS1=[jail]# " : "PS1=[jail]$ ");
     if (!ps1) {
-        perror("out of memory");
-        logerror("out of memory");
+        perror("strdup");
+        cape_log_error("out of memory");
         exit(EXIT_FAILURE);
     }
 
     if (!insecure_mode) {
-        err = enable_seccomp();
+        err = cape_enable_seccomp();
         if (err) {
-            logerror("could not enable seccomp");
+            cape_log_error("could not enable seccomp");
             exit(EXIT_FAILURE);
         }
     }
@@ -204,8 +171,9 @@ int main(int argc, char **argv) {
     err = execvpe(program_path, program_args, envp);
     if (err) {
         perror(program_path);
-        logerror("could not exec: %s", program_path);
+        cape_log_error("could not exec: %s", program_path);
         exit(EXIT_FAILURE);
     }
+    cape_logger_shutdown();
     return err;
 }
