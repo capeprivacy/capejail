@@ -121,7 +121,7 @@ int main(int argc, char **argv) {
 
     if (user) {
         /*
-         * Drop root privledges:
+         * Drop root privileges:
          * https://wiki.sei.cmu.edu/confluence/display/c/POS36-C.+Observe+correct+revocation+order+while+relinquishing+privileges
          */
         const gid_t list[] = {uid};
@@ -168,6 +168,7 @@ int main(int argc, char **argv) {
     envp[1] = NULL;
     program_path = argv[index];
     program_args = argv + index;
+
     err = execvpe(program_path, program_args, envp);
     if (err) {
         perror(program_path);
