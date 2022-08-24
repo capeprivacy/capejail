@@ -106,6 +106,30 @@ NOTE: should be run as root or with sudo to allow chroot
 ```
 
 ## Example
+
+First, create a chroot directory. One way to do this is to run a docker
+container, and mount a volume to it where you will install the system to.
+
+```
+docker run --rm -it -v ~/chroot:/chroot debian
+```
+
+Next, copy the necessary directories into the chroot:
+
+```
+mkdir /chroot
+mkdir /chroot/dev
+cp -r /bin /chroot/
+cp -r /sbin /chroot/
+cp -r /usr /chroot/
+cp -r /etc /chroot/
+cp -r /lib /chroot/
+cp -r /lib64 /chroot/
+```
+
+And now you'll have a chroot environment setup at `~/chroot`. At this point,
+you're ready to run `capejail`.
+
 ```bash
 (py310) [kyle@fedora capejail]$ sudo capejail -r ~/chroot -u jailuser -- bash
 [jail]$ echo $USER
