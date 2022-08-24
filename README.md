@@ -114,7 +114,8 @@ container, and mount a volume to it where you will install the system to.
 docker run --rm -it -v ~/chroot:/chroot debian
 ```
 
-Next, copy the necessary directories into the chroot:
+Next, within the docker container, copy the necessary directories into the
+chroot:
 
 ```
 mkdir /chroot
@@ -122,6 +123,7 @@ cp -r /bin /chroot/
 cp -r /sbin /chroot/
 cp -r /usr /chroot/
 cp -r /etc /chroot/
+rm -f /chroot/etc/bash.bashrc
 cp -r /lib /chroot/
 cp -r /lib64 /chroot/
 mkdir /chroot/dev
