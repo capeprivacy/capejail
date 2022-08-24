@@ -3,9 +3,35 @@
 Enable a secure compute environment in a jail that blocks certain syscalls.
 
 ## Contents
+- [Build](#build)
 - [Motivation](#motivation)
 - [Usage](#usage)
 - [Example](#example)
+
+## Build
+
+Because of the dependence on
+[seccomp](https://man7.org/linux/man-pages/man2/seccomp.2.html), this project is
+Linux specific, and it will not build on other operating systems (not even other
+UNIX like systems).
+
+First, ensure that you have the following dependencies installed:
+
+Ubuntu/Debian
+```
+sudo apt install libseccomp-dev
+```
+
+Fedora/CentOS/Red hat
+```
+sudo dnf install libseccomp-devel
+```
+
+To compile `capejail`, type the following into a terminal:
+
+```
+make
+```
 
 ## Motivation
 
@@ -30,7 +56,7 @@ used to achieve this, it has been found that we do not have access to
 configuring namespaces while in the Nitro Enclave.
 
 For a comprehensive list of why certain syscalls are blocked, please see
-[SYSCALLS.md](https://github.com/capeprivacy/capejail/SYSCALLS.md).
+[SYSCALLS.md](https://github.com/capeprivacy/capejail/blob/main/SYSCALLS.md).
 
 > Why not just use namespaces, cgroups, and/or unshare?
 
