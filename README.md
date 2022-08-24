@@ -118,13 +118,23 @@ Next, copy the necessary directories into the chroot:
 
 ```
 mkdir /chroot
-mkdir /chroot/dev
 cp -r /bin /chroot/
 cp -r /sbin /chroot/
 cp -r /usr /chroot/
 cp -r /etc /chroot/
 cp -r /lib /chroot/
 cp -r /lib64 /chroot/
+mkdir /chroot/dev
+mknod -m 666 /chroot/dev/null c 1 3
+mknod -m 666 /chroot/dev/zero c 1 5
+mknod -m 666 /chroot/dev/random c 1 8
+mknod -m 666 /chroot/dev/urandom c 1 9
+```
+
+Create a new user for running as within the jail.
+
+```
+adduser jailuser
 ```
 
 And now you'll have a chroot environment setup at `~/chroot`. At this point,
