@@ -27,7 +27,7 @@ static int parse_opts(
     int c;
     if (!root || !user || !directory || !insecure_mode) {
         cape_log_error(
-            "parse_opts got null pointer for root and/or user and/or "
+            "parse_opts got a null pointer for root and/or user and/or "
             "directory and/or insecure_mode"
         );
         return -1;
@@ -121,7 +121,7 @@ int main(int argc, char **argv) {
 
     if (user) {
         /*
-         * Drop root privledges:
+         * Drop root privileges:
          * https://wiki.sei.cmu.edu/confluence/display/c/POS36-C.+Observe+correct+revocation+order+while+relinquishing+privileges
          */
         const gid_t list[] = {uid};
@@ -168,6 +168,7 @@ int main(int argc, char **argv) {
     envp[1] = NULL;
     program_path = argv[index];
     program_args = argv + index;
+
     err = execvpe(program_path, program_args, envp);
     if (err) {
         perror(program_path);

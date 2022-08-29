@@ -1112,9 +1112,9 @@ static const int ALLOWED_SYSCALLS[] = {
     SCMP_SYS(signalfd4),
 
     /*
-     * This system call is needed by bash, so while we would like to restrict
-     * programs from being able to do external networking, this system call is
-     * quite important for many programs
+     * This system call is needed to start bash and Python, so while we would
+     * like to restrict programs from being able to do external networking, this
+     * system call is quite important for many programs to simply run.
      */
     SCMP_SYS(socket),
 
