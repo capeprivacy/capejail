@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/wait.h>
 #include <unistd.h>
 
 #include "banned.h"
@@ -66,6 +67,75 @@ static int parse_opts(
     }
 }
 
+static int launch_jail(
+    const char *program_path,
+    char *const *program_args,
+    char *const *envp,
+    int *child_status
+) {
+    pid_t child_pid;
+    int err = 0;
+    int wait_status;
+
+    child_pid = fork();
+    if (child_pid == 0) {
+        /* child */
+        err = execvpe(program_path, program_args, envp);
+        if (err) {
+            perror(program_path);
+            cape_log_error("could not exec: %s", program_path);
+            goto done;
+        }
+    } else if (child_pid > 0) {
+        /* parent */
+        pid_t w;
+        do {
+            w = waitpid(child_pid, &wait_status, WUNTRACED | WCONTINUED);
+            if (w == -1) {
+                perror("waitpid");
+                cape_log_error("failed to wait for child process");
+                err = w;
+                goto done;
+            }
+
+            if (WIFEXITED(wait_status)) {
+                cape_log_error(
+                    "'%s' exited with status %d",
+                    program_path,
+                    WEXITSTATUS(wait_status)
+                );
+                *child_status = WEXITSTATUS(wait_status);
+
+            } else if (WIFSIGNALED(wait_status)) {
+                cape_log_error(
+                    "'%s' killed by signal %d",
+                    program_path,
+                    WTERMSIG(wait_status)
+                );
+
+            } else if (WIFSTOPPED(wait_status)) {
+                cape_log_error(
+                    "'%s' stopped by signal %d",
+                    program_path,
+                    WSTOPSIG(wait_status)
+                );
+
+            } else if (WIFCONTINUED(wait_status)) {
+                cape_log_error("'%s' continued", program_path);
+            }
+        } while (!WIFEXITED(wait_status) && !WIFSIGNALED(wait_status));
+
+    } else {
+        /* failure */
+        cape_log_error("failed to fork, shutting down jail");
+        err = child_pid;
+        goto done;
+    }
+
+done:
+    return err;
+}
+
 int main(int argc, char **argv) {
     int err = 0;
     int index;
@@ -80,7 +150,8 @@ int main(int argc, char **argv) {
     bool with_networking = true;
     uid_t uid = getuid();
     char *ps1 = NULL;
-    int unshare_flags = 0;
+    int unshare_flags = CLONE_NEWPID;
+    int child_status = 0;
 
     err = cape_logger_init(argv[0]);
     if (err) {
@@ -192,12 +263,23 @@ int main(int argc, char **argv) {
     program_path = argv[index];
     program_args = argv + index;
 
-    err = execvpe(program_path, program_args, envp);
+    err = launch_jail(program_path, program_args, envp, &child_status);
     if (err) {
-        perror(program_path);
-        cape_log_error("could not exec: %s", program_path);
-        exit(EXIT_FAILURE);
+        cape_log_error("capejail encountered an error: %d", err);
+        goto done;
     }
+
+    if (child_status) {
+        err = child_status;
+        cape_log_error(
+            "NOTICE: the child process exited with a non-zero exit code.\n"
+            "* This is NOT an error with capejail, but an error from the "
+            "child "
+            "process"
+        );
+    }
+
+done:
     cape_logger_shutdown();
     return err;
 }
