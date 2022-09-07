@@ -162,7 +162,7 @@ int main(int argc, char **argv) {
 
     err = cape_launch_jail(program_path, program_args, envp, &child_status);
     if (err) {
-        cape_log_error("capejail encountered an error: %d", err);
+        cape_log_error("error encountered while launching jail: %d", err);
         goto done;
     }
 

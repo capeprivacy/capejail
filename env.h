@@ -1,6 +1,8 @@
 #ifndef ENV_H
 #define ENV_H
 
+#include <unistd.h>
+
 /*
  * Create a new environment variable pointer to be used by the child process.
  * Returns NULL on failure.

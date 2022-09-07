@@ -17,12 +17,10 @@ static int do_unshare(bool disable_networking) {
         unshare_flags |= CLONE_NEWNET;
     }
 
-    if (unshare_flags) {
-        err = unshare(unshare_flags);
-        if (err) {
-            perror("unshare");
-            goto done;
-        }
+    err = unshare(unshare_flags);
+    if (err) {
+        perror("unshare");
+        goto done;
     }
 
 done:
