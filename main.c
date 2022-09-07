@@ -26,13 +26,8 @@ static int parse_opts(
     bool *disable_networking
 ) {
     int c;
-    if (
-        !root ||
-        !user ||
-        !directory ||
-        !insecure_mode ||
-        !disable_networking
-    ) {
+    if (!root || !user || !directory || !insecure_mode ||
+        !disable_networking) {
         cape_log_error(
             "parse_opts got a null pointer for root and/or user and/or "
             "directory and/or insecure_mode and/or networking"
@@ -104,7 +99,8 @@ int main(int argc, char **argv) {
     );
     if (index < 0) {
         cape_print_usage();
-        exit(EXIT_FAILURE);
+        err = -1;
+        goto done;
     }
 
     if (user) {
@@ -112,7 +108,8 @@ int main(int argc, char **argv) {
         if (!user_data) {
             perror("getpwnam");
             cape_log_error("failed to lookup user: '%s'", user);
-            exit(EXIT_FAILURE);
+            err = -1;
+            goto done;
         }
         uid = user_data->pw_uid;
     }
@@ -126,7 +123,7 @@ int main(int argc, char **argv) {
                 "exist?)",
                 root
             );
-            exit(EXIT_FAILURE);
+            goto done;
         }
     }
 
@@ -135,7 +132,7 @@ int main(int argc, char **argv) {
         if (err) {
             perror("chdir");
             cape_log_error("could not change directory to '%s'", directory);
-            exit(EXIT_FAILURE);
+            goto done;
         }
     }
 
@@ -151,14 +148,15 @@ int main(int argc, char **argv) {
     if (!ps1) {
         perror("strdup");
         cape_log_error("out of memory");
-        exit(EXIT_FAILURE);
+        err = -1;
+        goto done;
     }
 
     if (!insecure_mode) {
         err = cape_enable_seccomp();
         if (err) {
             cape_log_error("could not enable seccomp");
-            exit(EXIT_FAILURE);
+            goto done;
         }
     }
 
