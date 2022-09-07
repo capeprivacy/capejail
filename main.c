@@ -1,7 +1,5 @@
 #define _GNU_SOURCE
-#include <grp.h>
 #include <pwd.h>
-#include <sched.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -12,6 +10,7 @@
 #include "enableseccomp.h"
 #include "launch.h"
 #include "logger.h"
+#include "privileges.h"
 
 /*
  * On failure: returns a negative value
@@ -81,7 +80,6 @@ int main(int argc, char **argv) {
     bool with_networking = true;
     uid_t uid = getuid();
     char *ps1 = NULL;
-    int unshare_flags = CLONE_NEWPID;
     int child_status = 0;
 
     err = cape_logger_init(argv[0]);
@@ -108,20 +106,6 @@ int main(int argc, char **argv) {
         uid = user_data->pw_uid;
     }
 
-    if (!with_networking) {
-        /* disable networking for the jailed process */
-        unshare_flags |= CLONE_NEWNET;
-    }
-
-    if (unshare_flags) {
-        err = unshare(unshare_flags);
-        if (err) {
-            perror("unshare");
-            cape_log_error("could not unshare the flags: %d", unshare_flags);
-            exit(EXIT_FAILURE);
-        }
-    }
-
     if (root) {
         err = chroot(root);
         if (err) {
@@ -145,32 +129,10 @@ int main(int argc, char **argv) {
     }
 
     if (user) {
-        /*
-         * Drop root privileges:
-         * https://wiki.sei.cmu.edu/confluence/display/c/POS36-C.+Observe+correct+revocation+order+while+relinquishing+privileges
-         */
-        const gid_t list[] = {uid};
-        const size_t len = sizeof(list) / sizeof(*list);
-
-        err = setgroups(len, list);
+        err = cape_drop_privileges(uid, with_networking);
         if (err) {
-            perror("setgroups");
-            cape_log_error("could not setgroups to: '%d'", uid);
-            exit(EXIT_FAILURE);
-        }
-
-        err = setgid(uid);
-        if (err) {
-            perror("setgid");
-            cape_log_error("could not setgid to: '%d'", uid);
-            exit(EXIT_FAILURE);
-        }
-
-        err = setuid(uid);
-        if (err) {
-            perror("setuid");
-            cape_log_error("could not setuid to: '%d'", uid);
-            exit(EXIT_FAILURE);
+            cape_log_error("could not drop privileges");
+            goto done;
         }
     }
 
@@ -210,6 +172,7 @@ int main(int argc, char **argv) {
     }
 
 done:
+    cape_log_error("shutting down");
     cape_logger_shutdown();
     return err;
 }
