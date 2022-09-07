@@ -2,11 +2,11 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <unistd.h>
 
 #include "banned.h"
 #include "enableseccomp.h"
+#include "env.h"
 #include "launch.h"
 #include "logger.h"
 #include "privileges.h"
@@ -74,12 +74,11 @@ int main(int argc, char **argv) {
     char *root = NULL;
     char *user = NULL;
     const char *directory = "/";
-    char *envp[2];
+    char **envp = NULL;
     struct passwd *user_data = NULL;
     bool insecure_mode = false;
     bool disable_networking = false;
     uid_t uid = getuid();
-    char *ps1 = NULL;
     int child_status = 0;
 
     err = cape_logger_init(argv[0]);
@@ -136,19 +135,17 @@ int main(int argc, char **argv) {
         }
     }
 
-    if (user) {
-        err = cape_drop_privileges(uid, disable_networking);
-        if (err) {
-            cape_log_error("could not drop privileges");
-            goto done;
-        }
+    err = cape_drop_privileges(uid, disable_networking);
+    if (err) {
+        cape_log_error("could not drop privileges");
+        goto done;
     }
 
-    ps1 = strdup((uid == 0) ? "PS1=[jail]# " : "PS1=[jail]$ ");
-    if (!ps1) {
-        perror("strdup");
-        cape_log_error("out of memory");
-        err = -1;
+    envp = cape_envp_new(uid);
+    if (!envp) {
+        cape_log_error(
+            "failed to setup environment variables for child process"
+        );
         goto done;
     }
 
@@ -160,8 +157,6 @@ int main(int argc, char **argv) {
         }
     }
 
-    envp[0] = ps1;
-    envp[1] = NULL;
     program_path = argv[index];
     program_args = argv + index;
 
@@ -183,5 +178,6 @@ int main(int argc, char **argv) {
 done:
     cape_log_error("shutting down");
     cape_logger_shutdown();
+    cape_envp_destroy(envp);
     return err;
 }
