@@ -10,6 +10,12 @@
 
 static int do_unshare(bool disable_networking) {
     int err = 0;
+
+    /*
+     * Start new processes in a new process ID namespace, this way the user
+     * process will not be able to see any other processes on the system other
+     * than itself and any child processes that it creates.
+     */
     int unshare_flags = CLONE_NEWPID;
 
     if (disable_networking) {
