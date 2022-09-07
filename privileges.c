@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
+#include <grp.h>
 #include <sched.h>
 #include <stdbool.h>
-#include <grp.h>
 #include <stdio.h>
 #include <unistd.h>
 
