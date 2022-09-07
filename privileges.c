@@ -8,11 +8,11 @@
 #include "logger.h"
 #include "privileges.h"
 
-static int do_unshare(bool with_networking) {
+static int do_unshare(bool disable_networking) {
     int err = 0;
     int unshare_flags = CLONE_NEWPID;
 
-    if (!with_networking) {
+    if (disable_networking) {
         /* disable networking for the jailed process */
         unshare_flags |= CLONE_NEWNET;
     }
@@ -29,7 +29,7 @@ done:
     return err;
 }
 
-int cape_drop_privileges(uid_t uid, bool with_networking) {
+int cape_drop_privileges(uid_t uid, bool disable_networking) {
     /*
      * Drop root privileges:
      * https://wiki.sei.cmu.edu/confluence/display/c/POS36-C.+Observe+correct+revocation+order+while+relinquishing+privileges
@@ -38,7 +38,7 @@ int cape_drop_privileges(uid_t uid, bool with_networking) {
     const gid_t list[] = {uid};
     const size_t len = sizeof(list) / sizeof(*list);
 
-    err = do_unshare(with_networking);
+    err = do_unshare(disable_networking);
     if (err) {
         cape_log_error("could not unshare");
         goto done;

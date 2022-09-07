@@ -1,4 +1,3 @@
-#define _GNU_SOURCE
 #include <pwd.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -24,10 +23,10 @@ static int parse_opts(
     char **user,
     const char **directory,
     bool *insecure_mode,
-    bool *with_networking
+    bool *disable_networking
 ) {
     int c;
-    if (!root || !user || !directory || !insecure_mode || !with_networking) {
+    if (!root || !user || !directory || !insecure_mode || !disable_networking) {
         cape_log_error(
             "parse_opts got a null pointer for root and/or user and/or "
             "directory and/or insecure_mode and/or networking"
@@ -52,7 +51,7 @@ static int parse_opts(
             *insecure_mode = true;
             break;
         case 'n':
-            *with_networking = false;
+            *disable_networking = true;
             break;
         default:
             return -1;
@@ -77,7 +76,7 @@ int main(int argc, char **argv) {
     char *envp[2];
     struct passwd *user_data = NULL;
     bool insecure_mode = false;
-    bool with_networking = true;
+    bool disable_networking = false;
     uid_t uid = getuid();
     char *ps1 = NULL;
     int child_status = 0;
@@ -89,7 +88,7 @@ int main(int argc, char **argv) {
     }
 
     index = parse_opts(
-        argc, argv, &root, &user, &directory, &insecure_mode, &with_networking
+        argc, argv, &root, &user, &directory, &insecure_mode, &disable_networking
     );
     if (index < 0) {
         cape_print_usage();
@@ -129,7 +128,7 @@ int main(int argc, char **argv) {
     }
 
     if (user) {
-        err = cape_drop_privileges(uid, with_networking);
+        err = cape_drop_privileges(uid, disable_networking);
         if (err) {
             cape_log_error("could not drop privileges");
             goto done;
