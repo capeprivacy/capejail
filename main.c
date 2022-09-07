@@ -67,6 +67,51 @@ static int parse_opts(
     }
 }
 
+static int wait_for_child(
+    pid_t child_pid, const char *program_path, int *child_status
+) {
+    pid_t wait_id;
+    int wait_status;
+    int err = 0;
+
+    do {
+        wait_id = waitpid(child_pid, &wait_status, WUNTRACED | WCONTINUED);
+        if (wait_id == -1) {
+            perror("waitpid");
+            cape_log_error("failed to wait for child process");
+            err = -1;
+            goto done;
+        }
+
+        if (WIFEXITED(wait_status)) {
+            cape_log_error(
+                "'%s' exited with status %d",
+                program_path,
+                WEXITSTATUS(wait_status)
+            );
+            *child_status = WEXITSTATUS(wait_status);
+
+        } else if (WIFSIGNALED(wait_status)) {
+            cape_log_error(
+                "'%s' killed by signal %d", program_path, WTERMSIG(wait_status)
+            );
+
+        } else if (WIFSTOPPED(wait_status)) {
+            cape_log_error(
+                "'%s' stopped by signal %d",
+                program_path,
+                WSTOPSIG(wait_status)
+            );
+
+        } else if (WIFCONTINUED(wait_status)) {
+            cape_log_error("'%s' continued", program_path);
+        }
+    } while (!WIFEXITED(wait_status) && !WIFSIGNALED(wait_status));
+
+done:
+    return err;
+}
+
 static int launch_jail(
     const char *program_path,
     char *const *program_args,
@@ -75,7 +120,6 @@ static int launch_jail(
 ) {
     pid_t child_pid;
     int err = 0;
-    int wait_status;
 
     child_pid = fork();
     if (child_pid == 0) {
@@ -86,44 +130,10 @@ static int launch_jail(
             cape_log_error("could not exec: %s", program_path);
             goto done;
         }
+
     } else if (child_pid > 0) {
         /* parent */
-        pid_t w;
-        do {
-            w = waitpid(child_pid, &wait_status, WUNTRACED | WCONTINUED);
-            if (w == -1) {
-                perror("waitpid");
-                cape_log_error("failed to wait for child process");
-                err = w;
-                goto done;
-            }
-
-            if (WIFEXITED(wait_status)) {
-                cape_log_error(
-                    "'%s' exited with status %d",
-                    program_path,
-                    WEXITSTATUS(wait_status)
-                );
-                *child_status = WEXITSTATUS(wait_status);
-
-            } else if (WIFSIGNALED(wait_status)) {
-                cape_log_error(
-                    "'%s' killed by signal %d",
-                    program_path,
-                    WTERMSIG(wait_status)
-                );
-
-            } else if (WIFSTOPPED(wait_status)) {
-                cape_log_error(
-                    "'%s' stopped by signal %d",
-                    program_path,
-                    WSTOPSIG(wait_status)
-                );
-
-            } else if (WIFCONTINUED(wait_status)) {
-                cape_log_error("'%s' continued", program_path);
-            }
-        } while (!WIFEXITED(wait_status) && !WIFSIGNALED(wait_status));
+        err = wait_for_child(child_pid, program_path, child_status);
 
     } else {
         /* failure */
@@ -274,8 +284,7 @@ int main(int argc, char **argv) {
         cape_log_error(
             "NOTICE: the child process exited with a non-zero exit code.\n"
             "* This is NOT an error with capejail, but an error from the "
-            "child "
-            "process"
+            "child process."
         );
     }
 
