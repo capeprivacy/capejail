@@ -3,6 +3,7 @@
 #include <string.h>
 #include <unistd.h>
 
+#include "banned.h"
 #include "env.h"
 #include "logger.h"
 
