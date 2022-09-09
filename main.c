@@ -8,57 +8,9 @@
 #include "env.h"
 #include "launch.h"
 #include "logger.h"
+#include "opts.h"
 #include "privileges.h"
 #include "seccomp.h"
-
-struct opts {
-    const char *root;
-    const char *user;
-    const char *directory;
-    bool insecure_mode;
-    bool disable_networking;
-};
-
-/*
- * On failure: returns a negative value
- * On success: returns the index in argv of the program and arguments to exec
- *             in the jail
- */
-static int parse_opts(
-    int argc, char *const *const argv, struct opts *opts /* out */
-) {
-    int c;
-    while ((c = getopt(argc, argv, "Ihr:u:d:n")) != -1) {
-        switch (c) {
-        case 'h':
-            cape_print_usage();
-            exit(EXIT_SUCCESS);
-        case 'n':
-            opts->disable_networking = true;
-            break;
-        case 'd':
-            opts->directory = optarg;
-            break;
-        case 'r':
-            opts->root = optarg;
-            break;
-        case 'u':
-            opts->user = optarg;
-            break;
-        case 'I':
-            opts->insecure_mode = true;
-            break;
-        default:
-            return -1;
-        }
-    }
-    if (optind >= argc) {
-        cape_log_error("no program specified");
-        return -1;
-    } else {
-        return optind;
-    }
-}
 
 int main(int argc, char **argv) {
     int err = 0;
@@ -70,7 +22,7 @@ int main(int argc, char **argv) {
     uid_t uid = getuid();
     int child_status = 0;
 
-    struct opts opts = {
+    struct cape_opts opts = {
         .root = NULL,
         .user = NULL,
         .directory = "/",
@@ -84,7 +36,7 @@ int main(int argc, char **argv) {
         exit(EXIT_FAILURE);
     }
 
-    index = parse_opts(argc, argv, &opts);
+    index = cape_parse_opts(argc, argv, &opts);
     if (index < 0) {
         cape_print_usage();
         err = -1;
