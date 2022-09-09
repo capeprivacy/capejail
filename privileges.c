@@ -19,7 +19,6 @@ static int do_unshare(bool disable_networking) {
     int unshare_flags = CLONE_NEWPID;
 
     if (disable_networking) {
-        /* disable networking for the jailed process */
         unshare_flags |= CLONE_NEWNET;
     }
 

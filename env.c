@@ -7,9 +7,19 @@
 #include "logger.h"
 
 char **cape_envp_new(uid_t uid) {
-    char **envp = calloc(2, sizeof(*envp));
     char *ps1 = NULL;
 
+    /*
+     * NOTICE:
+     * If adding additional environment variables to envp, be sure to increment
+     * `num_environment_variables`
+     */
+    const size_t num_environment_variables = 1;
+
+    char **envp = calloc(
+        num_environment_variables + 1 /* +1 for NULL terminated envp */,
+        sizeof(*envp)
+    );
     if (!envp) {
         perror("calloc");
         cape_log_error("out of memory");
