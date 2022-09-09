@@ -24,7 +24,9 @@ struct opts {
  * On success: returns the index in argv of the program and arguments to exec
  *             in the jail
  */
-static int parse_opts(int argc, char **argv, struct opts *opts) {
+static int parse_opts(
+    int argc, char *const *const argv, struct opts *opts /* out */
+) {
     int c;
     while ((c = getopt(argc, argv, "Ihr:u:d:n")) != -1) {
         switch (c) {
