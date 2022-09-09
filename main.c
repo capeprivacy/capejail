@@ -1,6 +1,7 @@
 #define _GNU_SOURCE
 #include <grp.h>
 #include <pwd.h>
+#include <sched.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -22,17 +23,19 @@ static int parse_opts(
     char **root,
     char **user,
     const char **directory,
-    bool *insecure_mode
+    bool *insecure_mode,
+    bool *disable_networking
 ) {
     int c;
-    if (!root || !user || !directory || !insecure_mode) {
+    if (!root || !user || !directory || !insecure_mode ||
+        !disable_networking) {
         cape_log_error(
             "parse_opts got a null pointer for root and/or user and/or "
-            "directory and/or insecure_mode"
+            "directory and/or insecure_mode and/or networking"
         );
         return -1;
     }
-    while ((c = getopt(argc, argv, "Ihr:u:d:")) != -1) {
+    while ((c = getopt(argc, argv, "Ihr:u:d:n")) != -1) {
         switch (c) {
         case 'd':
             *directory = optarg;
@@ -48,6 +51,9 @@ static int parse_opts(
             exit(EXIT_SUCCESS);
         case 'I':
             *insecure_mode = true;
+            break;
+        case 'n':
+            *disable_networking = true;
             break;
         default:
             return -1;
@@ -72,8 +78,10 @@ int main(int argc, char **argv) {
     char *envp[2];
     struct passwd *user_data = NULL;
     bool insecure_mode = false;
+    bool disable_networking = false;
     uid_t uid = getuid();
     char *ps1 = NULL;
+    int unshare_flags = 0;
 
     err = cape_logger_init(argv[0]);
     if (err) {
@@ -81,7 +89,15 @@ int main(int argc, char **argv) {
         exit(EXIT_FAILURE);
     }
 
-    index = parse_opts(argc, argv, &root, &user, &directory, &insecure_mode);
+    index = parse_opts(
+        argc,
+        argv,
+        &root,
+        &user,
+        &directory,
+        &insecure_mode,
+        &disable_networking
+    );
     if (index < 0) {
         cape_print_usage();
         exit(EXIT_FAILURE);
@@ -95,6 +111,19 @@ int main(int argc, char **argv) {
             exit(EXIT_FAILURE);
         }
         uid = user_data->pw_uid;
+    }
+
+    if (disable_networking) {
+        unshare_flags |= CLONE_NEWNET;
+    }
+
+    if (unshare_flags) {
+        err = unshare(unshare_flags);
+        if (err) {
+            perror("unshare");
+            cape_log_error("could not unshare the flags: %d", unshare_flags);
+            exit(EXIT_FAILURE);
+        }
     }
 
     if (root) {
