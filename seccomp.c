@@ -2,8 +2,8 @@
 #include <stdio.h>
 
 #include "banned.h"
-#include "enableseccomp.h"
 #include "logger.h"
+#include "seccomp.h"
 
 static const int ALLOWED_SYSCALLS[] = {
     /*

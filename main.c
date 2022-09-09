@@ -5,11 +5,11 @@
 #include <unistd.h>
 
 #include "banned.h"
-#include "enableseccomp.h"
 #include "env.h"
 #include "launch.h"
 #include "logger.h"
 #include "privileges.h"
+#include "seccomp.h"
 
 /*
  * On failure: returns a negative value
