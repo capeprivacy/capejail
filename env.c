@@ -7,7 +7,7 @@
 #include "logger.h"
 
 char **cape_envp_new(uid_t uid) {
-    char **envp = calloc(2, sizeof(char **));
+    char **envp = calloc(2, sizeof(*envp));
     char *ps1 = NULL;
 
     if (!envp) {
