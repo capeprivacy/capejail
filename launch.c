@@ -8,7 +8,7 @@
 #include "logger.h"
 
 static int wait_for_child(
-    pid_t child_pid, const char *program_path, int *child_status
+    pid_t child_pid, const char *program_path, int *child_status /* out */
 ) {
     pid_t wait_id;
     int wait_status;
