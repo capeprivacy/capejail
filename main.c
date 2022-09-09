@@ -30,6 +30,12 @@ static int parse_opts(
     int c;
     while ((c = getopt(argc, argv, "Ihr:u:d:n")) != -1) {
         switch (c) {
+        case 'h':
+            cape_print_usage();
+            exit(EXIT_SUCCESS);
+        case 'n':
+            opts->disable_networking = true;
+            break;
         case 'd':
             opts->directory = optarg;
             break;
@@ -39,14 +45,8 @@ static int parse_opts(
         case 'u':
             opts->user = optarg;
             break;
-        case 'h':
-            cape_print_usage();
-            exit(EXIT_SUCCESS);
         case 'I':
             opts->insecure_mode = true;
-            break;
-        case 'n':
-            opts->disable_networking = true;
             break;
         default:
             return -1;
