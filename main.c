@@ -11,48 +11,40 @@
 #include "privileges.h"
 #include "seccomp.h"
 
+struct opts {
+    const char *root;
+    const char *user;
+    const char *directory;
+    bool insecure_mode;
+    bool disable_networking;
+};
+
 /*
  * On failure: returns a negative value
  * On success: returns the index in argv of the program and arguments to exec
  *             in the jail
  */
-static int parse_opts(
-    int argc,
-    char **argv,
-    char **root,
-    char **user,
-    const char **directory,
-    bool *insecure_mode,
-    bool *disable_networking
-) {
+static int parse_opts(int argc, char **argv, struct opts *opts) {
     int c;
-    if (!root || !user || !directory || !insecure_mode ||
-        !disable_networking) {
-        cape_log_error(
-            "parse_opts got a null pointer for root and/or user and/or "
-            "directory and/or insecure_mode and/or networking"
-        );
-        return -1;
-    }
     while ((c = getopt(argc, argv, "Ihr:u:d:n")) != -1) {
         switch (c) {
         case 'd':
-            *directory = optarg;
+            opts->directory = optarg;
             break;
         case 'r':
-            *root = optarg;
+            opts->root = optarg;
             break;
         case 'u':
-            *user = optarg;
+            opts->user = optarg;
             break;
         case 'h':
             cape_print_usage();
             exit(EXIT_SUCCESS);
         case 'I':
-            *insecure_mode = true;
+            opts->insecure_mode = true;
             break;
         case 'n':
-            *disable_networking = true;
+            opts->disable_networking = true;
             break;
         default:
             return -1;
@@ -71,15 +63,18 @@ int main(int argc, char **argv) {
     int index;
     char *program_path = NULL;
     char **program_args = NULL;
-    char *root = NULL;
-    char *user = NULL;
-    const char *directory = "/";
     char **envp = NULL;
     struct passwd *user_data = NULL;
-    bool insecure_mode = false;
-    bool disable_networking = false;
     uid_t uid = getuid();
     int child_status = 0;
+
+    struct opts opts = {
+        .root = NULL,
+        .user = NULL,
+        .directory = "/",
+        .insecure_mode = false,
+        .disable_networking = false,
+    };
 
     err = cape_logger_init(argv[0]);
     if (err) {
@@ -87,55 +82,49 @@ int main(int argc, char **argv) {
         exit(EXIT_FAILURE);
     }
 
-    index = parse_opts(
-        argc,
-        argv,
-        &root,
-        &user,
-        &directory,
-        &insecure_mode,
-        &disable_networking
-    );
+    index = parse_opts(argc, argv, &opts);
     if (index < 0) {
         cape_print_usage();
         err = -1;
         goto done;
     }
 
-    if (user) {
-        user_data = getpwnam(user);
+    if (opts.user) {
+        user_data = getpwnam(opts.user);
         if (!user_data) {
             perror("getpwnam");
-            cape_log_error("failed to lookup user: '%s'", user);
+            cape_log_error("failed to lookup user: '%s'", opts.user);
             err = -1;
             goto done;
         }
         uid = user_data->pw_uid;
     }
 
-    if (root) {
-        err = chroot(root);
+    if (opts.root) {
+        err = chroot(opts.root);
         if (err) {
             perror("chroot");
             cape_log_error(
                 "could not chroot to: '%s' (are you root? does the directory "
                 "exist?)",
-                root
+                opts.root
             );
             goto done;
         }
     }
 
-    if (directory) {
-        err = chdir(directory);
+    if (opts.directory) {
+        err = chdir(opts.directory);
         if (err) {
             perror("chdir");
-            cape_log_error("could not change directory to '%s'", directory);
+            cape_log_error(
+                "could not change directory to '%s'", opts.directory
+            );
             goto done;
         }
     }
 
-    err = cape_drop_privileges(uid, disable_networking);
+    err = cape_drop_privileges(uid, opts.disable_networking);
     if (err) {
         cape_log_error("could not drop privileges");
         goto done;
@@ -149,7 +138,7 @@ int main(int argc, char **argv) {
         goto done;
     }
 
-    if (!insecure_mode) {
+    if (!opts.insecure_mode) {
         err = cape_enable_seccomp();
         if (err) {
             cape_log_error("could not enable seccomp");
