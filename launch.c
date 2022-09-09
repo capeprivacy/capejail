@@ -74,6 +74,9 @@ int cape_launch_jail(
     } else if (child_pid > 0) {
         /* parent */
         err = wait_for_child(child_pid, program_path, child_status);
+        if (err) {
+            goto done;
+        }
 
     } else {
         /* failure */
