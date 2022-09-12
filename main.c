@@ -1,87 +1,34 @@
-#define _GNU_SOURCE
-#include <grp.h>
 #include <pwd.h>
-#include <sched.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <unistd.h>
 
 #include "banned.h"
-#include "enableseccomp.h"
+#include "env.h"
+#include "launch.h"
 #include "logger.h"
-
-/*
- * On failure: returns a negative value
- * On success: returns the index in argv of the program and arguments to exec
- *             in the jail
- */
-static int parse_opts(
-    int argc,
-    char **argv,
-    char **root,
-    char **user,
-    const char **directory,
-    bool *insecure_mode,
-    bool *disable_networking
-) {
-    int c;
-    if (!root || !user || !directory || !insecure_mode ||
-        !disable_networking) {
-        cape_log_error(
-            "parse_opts got a null pointer for root and/or user and/or "
-            "directory and/or insecure_mode and/or networking"
-        );
-        return -1;
-    }
-    while ((c = getopt(argc, argv, "Ihr:u:d:n")) != -1) {
-        switch (c) {
-        case 'd':
-            *directory = optarg;
-            break;
-        case 'r':
-            *root = optarg;
-            break;
-        case 'u':
-            *user = optarg;
-            break;
-        case 'h':
-            cape_print_usage();
-            exit(EXIT_SUCCESS);
-        case 'I':
-            *insecure_mode = true;
-            break;
-        case 'n':
-            *disable_networking = true;
-            break;
-        default:
-            return -1;
-        }
-    }
-    if (optind >= argc) {
-        cape_log_error("no program specified");
-        return -1;
-    } else {
-        return optind;
-    }
-}
+#include "opts.h"
+#include "privileges.h"
+#include "seccomp.h"
 
 int main(int argc, char **argv) {
     int err = 0;
     int index;
     char *program_path = NULL;
     char **program_args = NULL;
-    char *root = NULL;
-    char *user = NULL;
-    const char *directory = "/";
-    char *envp[2];
+    char **envp = NULL;
     struct passwd *user_data = NULL;
-    bool insecure_mode = false;
-    bool disable_networking = false;
     uid_t uid = getuid();
-    char *ps1 = NULL;
-    int unshare_flags = 0;
+    int child_status = 0;
+
+    struct cape_opts opts = {
+        .root = NULL,
+        .user = NULL,
+        .directory = "/",
+        .insecure_mode = false,
+        .disable_networking = false,
+    };
 
     err = cape_logger_init(argv[0]);
     if (err) {
@@ -89,121 +36,91 @@ int main(int argc, char **argv) {
         exit(EXIT_FAILURE);
     }
 
-    index = parse_opts(
-        argc,
-        argv,
-        &root,
-        &user,
-        &directory,
-        &insecure_mode,
-        &disable_networking
-    );
+    index = cape_parse_opts(argc, argv, &opts);
     if (index < 0) {
         cape_print_usage();
-        exit(EXIT_FAILURE);
+        err = -1;
+        goto done;
     }
 
-    if (user) {
-        user_data = getpwnam(user);
+    if (opts.user) {
+        user_data = getpwnam(opts.user);
         if (!user_data) {
             perror("getpwnam");
-            cape_log_error("failed to lookup user: '%s'", user);
-            exit(EXIT_FAILURE);
+            cape_log_error("failed to lookup user: '%s'", opts.user);
+            err = -1;
+            goto done;
         }
         uid = user_data->pw_uid;
     }
 
-    if (disable_networking) {
-        unshare_flags |= CLONE_NEWNET;
-    }
-
-    if (unshare_flags) {
-        err = unshare(unshare_flags);
-        if (err) {
-            perror("unshare");
-            cape_log_error("could not unshare the flags: %d", unshare_flags);
-            exit(EXIT_FAILURE);
-        }
-    }
-
-    if (root) {
-        err = chroot(root);
+    if (opts.root) {
+        err = chroot(opts.root);
         if (err) {
             perror("chroot");
             cape_log_error(
                 "could not chroot to: '%s' (are you root? does the directory "
                 "exist?)",
-                root
+                opts.root
             );
-            exit(EXIT_FAILURE);
+            goto done;
         }
     }
 
-    if (directory) {
-        err = chdir(directory);
+    if (opts.directory) {
+        err = chdir(opts.directory);
         if (err) {
             perror("chdir");
-            cape_log_error("could not change directory to '%s'", directory);
-            exit(EXIT_FAILURE);
+            cape_log_error(
+                "could not change directory to '%s'", opts.directory
+            );
+            goto done;
         }
     }
 
-    if (user) {
-        /*
-         * Drop root privileges:
-         * https://wiki.sei.cmu.edu/confluence/display/c/POS36-C.+Observe+correct+revocation+order+while+relinquishing+privileges
-         */
-        const gid_t list[] = {uid};
-        const size_t len = sizeof(list) / sizeof(*list);
-
-        err = setgroups(len, list);
-        if (err) {
-            perror("setgroups");
-            cape_log_error("could not setgroups to: '%d'", uid);
-            exit(EXIT_FAILURE);
-        }
-
-        err = setgid(uid);
-        if (err) {
-            perror("setgid");
-            cape_log_error("could not setgid to: '%d'", uid);
-            exit(EXIT_FAILURE);
-        }
-
-        err = setuid(uid);
-        if (err) {
-            perror("setuid");
-            cape_log_error("could not setuid to: '%d'", uid);
-            exit(EXIT_FAILURE);
-        }
+    err = cape_drop_privileges(uid, opts.disable_networking);
+    if (err) {
+        cape_log_error("could not drop privileges");
+        goto done;
     }
 
-    ps1 = strdup((uid == 0) ? "PS1=[jail]# " : "PS1=[jail]$ ");
-    if (!ps1) {
-        perror("strdup");
-        cape_log_error("out of memory");
-        exit(EXIT_FAILURE);
+    envp = cape_envp_new(uid);
+    if (!envp) {
+        cape_log_error(
+            "failed to setup environment variables for child process"
+        );
+        goto done;
     }
 
-    if (!insecure_mode) {
+    if (!opts.insecure_mode) {
         err = cape_enable_seccomp();
         if (err) {
             cape_log_error("could not enable seccomp");
-            exit(EXIT_FAILURE);
+            goto done;
         }
     }
 
-    envp[0] = ps1;
-    envp[1] = NULL;
     program_path = argv[index];
     program_args = argv + index;
 
-    err = execvpe(program_path, program_args, envp);
+    err = cape_launch_jail(program_path, program_args, envp, &child_status);
     if (err) {
-        perror(program_path);
-        cape_log_error("could not exec: %s", program_path);
-        exit(EXIT_FAILURE);
+        cape_log_error("error encountered while launching jail: %d", err);
+        goto done;
     }
+
+    if (child_status) {
+        err = child_status;
+        cape_log_error(
+            "NOTICE: the child process exited with a non-zero exit code.\n"
+            "* This is NOT an error with capejail, but an error from the "
+            "child process."
+        );
+    }
+
+done:
+    cape_log_error("shutting down");
     cape_logger_shutdown();
+    cape_envp_destroy(envp);
     return err;
 }
