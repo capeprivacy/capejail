@@ -24,6 +24,17 @@ char **cape_envp_new(uid_t uid) {
     if (!envp) {
         perror("calloc");
         cape_log_error("out of memory");
+        goto fail;
+    }
+
+    /*
+     * It is possible on some platforms that NULL != 0, so make sure to NULL
+     * the entire array. Because of this, memset will also not work here, and
+     * to be completely standards compliant, we must NULL out this array in a
+     * for loop.
+     */
+    for (size_t i = 0; i < num_environment_variables + 1; i++) {
+        envp[i] = NULL;
     }
 
     ps1 = strdup((uid == 0) ? "PS1=[jail]# " : "PS1=[jail]$ ");
