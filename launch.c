@@ -14,6 +14,14 @@ static int wait_for_child(
     int wait_status;
     int err = 0;
 
+    /*
+     * Using waitpid is more intricate than it might at first appear. Please
+     * refer to the man pages -- `man 2 waitpid` -- for an explanation and
+     * example usage.
+     *
+     * Man pages are also available online here:
+     * https://www.man7.org/linux/man-pages/man2/waitpid.2.html
+     */
     do {
         wait_id = waitpid(child_pid, &wait_status, WUNTRACED | WCONTINUED);
         if (wait_id == -1) {
