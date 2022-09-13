@@ -47,52 +47,31 @@ designated jail.
 2. User code is run as a different user with locked down permissions.
 3. User code is run with seccomp filters set to block harmful syscalls that can
 be used to escape the jail.
+4. User code is run in a separate PID namespace, so it is not able to see or
+interact with any other processes on the system, other than its own child
+processes.
+5. Optionally, the jail can unshare the networking namespace, which removes the
+jailed process's ability to perform any networking.
 
 The chroot environment can be customized to the level of security desired.
 For example, by restricting access to `/proc` and certain devices in `/dev/`
 AND running the jail as a non-root user, you can keep the jailed user from
-tampering with other processes and devices. While Linux Namespaces are commonly
-used to achieve this, it has been found that we do not have access to
-configuring namespaces while in the Nitro Enclave.
+tampering with other processes and devices.
 
 For a comprehensive list of why certain syscalls are blocked, please see
 [SYSCALLS.md](https://github.com/capeprivacy/capejail/blob/main/SYSCALLS.md).
-
-> Why not just use namespaces, cgroups, and/or unshare?
-
-For sandboxing, those are absolutely the tools that one should reach for first
-on Linux! Unfortunately for us, within the enclave, we don't have the
-capabilities to use any of these tools. For example, when attempting to make a
-call to `unshare(CLONE_NEWNET)` in order to disable networking for the jailed
-process, we get the following error:
-
-```
-unshare: Operation not permitted
-```
-
-This is happening because `CLONE_NEWNET` requires the capability
-`CAP_SYS_ADMIN`, however, the Nitro Enclave does not have this capability
-enabled. We can see this happening within Docker as well. We can list the
-current process's capabilities by using the `getpcaps` command bellow:
-
-```
-root@6d1a0e8b7db6:/# getpcaps 0
-0: cap_chown,cap_dac_override,cap_fowner,cap_fsetid,cap_kill,cap_setgid,cap_setuid,cap_setpcap,cap_net_bind_service,cap_net_raw,cap_sys_chroot,cap_mknod,cap_audit_write,cap_setfcap=ep
-```
-
-Given the lack of capabilities to unshare `CLONE_NEWNS`, `CLONE_NEWCGROUP`, or
-`CLONE_NEWNET`, we therefore cannot use these Linux features in our sandboxing
-implementation.
-
-Hence, we need to work around these limitations with our own implementation
-utilizing chroot, seccomp, and UNIX user permissions.
 
 ## Usage
 ```
 $ capejail -h
 capejail: enable a secure compute environment in a jail that blocks certain syscalls
+
 usage:
 	capejail [OPTION] -- PROGRAM [ARGS]
+
+	-h	display this help message
+
+	-n	disable networking for the jailed process
 
 	-d	directory to start in within jail
 
@@ -143,7 +122,11 @@ And now you'll have a chroot environment setup at `~/chroot`. At this point,
 you're ready to run `capejail`.
 
 ```bash
-(py310) [kyle@fedora capejail]$ sudo capejail -r ~/chroot -u jailuser -- bash
+(py310) [kyle@fedora ~]$ grep PRETTY_NAME /etc/os-release
+PRETTY_NAME="Fedora Linux 36 (Workstation Edition)"
+(py310) [kyle@fedora ~]$ sudo capejail -r ~/chroot -u jailuser -- bash
+[jail]$ grep PRETTY_NAME /etc/os-release
+PRETTY_NAME="Debian GNU/Linux 11 (bullseye)"
 [jail]$ echo $USER
 jailuser
 [jail]$ pwd
@@ -163,5 +146,12 @@ drwxr-xr-x 1 root root   90 Jun  2 14:27 var
 Bad system call (core dumped)
 [jail]$ exit
 exit
-(py310) [kyle@fedora capejail]$
+(py310) [kyle@fedora ~]$
+(py310) [kyle@fedora ~]$ # Note, the '-I' flag is used here because ping will
+(py310) [kyle@fedora ~]$ # be killed by an illegal syscall before it has a
+(py310) [kyle@fedora ~]$ # chance to be blocked by unsharing the network namespace.
+(py310) [kyle@fedora ~]$ # DON'T USE '-I' IN PRODUCTION!
+(py310) [kyle@fedora ~]$ sudo capejail -u jailuser -I -n -r /home/kyle/chroot-ping/ -- bash
+[jail]$ ping google.com # with the '-n' flag, network calls are not allowed
+ping: socket: Operation not permitted
 ```
