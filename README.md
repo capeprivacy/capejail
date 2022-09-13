@@ -112,7 +112,8 @@ mknod -m 666 /chroot/dev/random c 1 8
 mknod -m 666 /chroot/dev/urandom c 1 9
 ```
 
-Create a new user for running as within the jail.
+After exiting the docker container, create a new user on the host system for
+running as within the jail.
 
 ```
 adduser jailuser
