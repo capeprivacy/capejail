@@ -32,6 +32,8 @@ char **cape_envp_new(uid_t uid) {
      * the entire array. Because of this, memset will also not work here, and
      * to be completely standards compliant, we must NULL out this array in a
      * for loop.
+     *
+     * See: https://c-faq.com/null/runtime0.html
      */
     for (size_t i = 0; i < num_environment_variables + 1; i++) {
         envp[i] = NULL;

@@ -200,10 +200,6 @@ See [link](#link)
 Listen for a connection on a socket. Could be used to run a webserver from
 within the enclave, possibly spoofing sentinel.
 
-### mbind
-
-Set the NUMA policy, requires CAP_SYS_NICE for certain flags.
-
 ### migrate_pages
 
 Move all pages in another process to another set of nodes. I'm suspicious of
@@ -307,26 +303,6 @@ Reboot the system.
 ### request_key
 
 Request a key from the kernel's key management facility.
-
-### sched_setaffinity
-
-User code probably shouldn't be making changes to process scheduling.
-
-### sched_setattr
-
-See [sched_setaffinity](#sched_setaffinity)
-
-### sched_setparam
-
-See [sched_setaffinity](#sched_setaffinity)
-
-### sched_setscheduler
-
-See [sched_setaffinity](#sched_setaffinity)
-
-### sched_yield
-
-See [sched_setaffinity](#sched_setaffinity)
 
 ### seccomp
 
