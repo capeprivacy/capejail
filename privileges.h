@@ -1,6 +1,9 @@
 #ifndef PRIVILEGES_H
 #define PRIVILEGES_H
 
+#include <stdbool.h>
+#include <sys/types.h>
+
 /*
  * - Set the UID of the current process to `uid`.
  * - Drop group memberships to only the current user group.

@@ -577,6 +577,11 @@ static const int ALLOWED_SYSCALLS[] = {
     SCMP_SYS(madvise),
 
     /*
+     * Set NUMA policy, used by numpy
+     */
+    SCMP_SYS(mbind),
+
+    /*
      * Issue memory barriers on a set of threads
      */
     SCMP_SYS(membarrier),
@@ -983,6 +988,7 @@ static const int ALLOWED_SYSCALLS[] = {
     SCMP_SYS(sched_get_priority_min),
     SCMP_SYS(sched_getscheduler),
     SCMP_SYS(sched_rr_get_interval),
+    SCMP_SYS(sched_yield),
 
     /*
      * Monitor multiple file descriptors.
