@@ -3,15 +3,12 @@
 
 #include <unistd.h>
 
+#include "vec.h"
+
 /*
  * Create a new environment variable pointer to be used by the child process.
  * Returns NULL on failure.
  */
-char **cape_envp_new(uid_t uid);
-
-/*
- * Cleanup the environment variable pointer and all of its allocated memory.
- */
-void cape_envp_destroy(char **envp);
+int cape_envp_finalize(uid_t uid, struct cape_string_vec *env /* out */);
 
 #endif /* ENV_H */

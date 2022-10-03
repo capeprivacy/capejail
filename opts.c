@@ -5,12 +5,17 @@
 #include "banned.h"
 #include "logger.h"
 #include "opts.h"
+#include "vec.h"
 
 int cape_parse_opts(
-    int argc, char *const *const argv, struct cape_opts *opts /* out */
+    int argc,
+    char *const *const argv,
+    struct cape_opts *opts,     /* out */
+    struct cape_string_vec *env /* out */
 ) {
     int c;
-    while ((c = getopt(argc, argv, "Ihr:u:d:n")) != -1) {
+    int err = 0;
+    while ((c = getopt(argc, argv, "e:Ihr:u:d:n")) != -1) {
         switch (c) {
         case 'h':
             cape_print_usage();
@@ -20,6 +25,14 @@ int cape_parse_opts(
             break;
         case 'd':
             opts->directory = optarg;
+            break;
+        case 'e':
+            err = cape_string_vec_push(env, optarg);
+            if (err) {
+                cape_log_error("could not push environment variable");
+                cape_string_vec_free(env);
+                return -1;
+            }
             break;
         case 'r':
             opts->root = optarg;

@@ -70,6 +70,9 @@ capejail: enable a secure compute environment in a jail that blocks certain sysc
 usage:
 	capejail [OPTION] -- PROGRAM [ARGS]
 
+	-e	add an environment variable in the form of KEY=VALUE
+		example: capejail -e HOME=/home/jailuser -e FOO=bar -- ...
+
 	-h	display this help message
 
 	-n	disable networking for the jailed process

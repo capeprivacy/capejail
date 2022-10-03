@@ -3,6 +3,8 @@
 
 #include <stdbool.h>
 
+#include "vec.h"
+
 struct cape_opts {
     const char *root;
     const char *user;
@@ -17,7 +19,10 @@ struct cape_opts {
  *             in the jail
  */
 int cape_parse_opts(
-    int argc, char *const *const argv, struct cape_opts *opts /* out */
+    int argc,
+    char *const *const argv,
+    struct cape_opts *opts,     /* out */
+    struct cape_string_vec *env /* out */
 );
 
 #endif /* OPTS_H */

@@ -11,13 +11,13 @@
 #include "opts.h"
 #include "privileges.h"
 #include "seccomp.h"
+#include "vec.h"
 
 int main(int argc, char **argv) {
     int err = 0;
     int index;
     char *program_path = NULL;
     char **program_args = NULL;
-    char **envp = NULL;
     struct passwd *user_data = NULL;
     uid_t uid = getuid();
     int child_status = 0;
@@ -30,13 +30,19 @@ int main(int argc, char **argv) {
         .disable_networking = false,
     };
 
+    struct cape_string_vec env = {
+        .data = NULL,
+        .len = 0,
+        .cap = 0,
+    };
+
     err = cape_logger_init(argv[0]);
     if (err) {
         fprintf(stderr, "failed to initialize logger\n");
         exit(EXIT_FAILURE);
     }
 
-    index = cape_parse_opts(argc, argv, &opts);
+    index = cape_parse_opts(argc, argv, &opts, &env);
     if (index < 0) {
         cape_print_usage();
         err = -1;
@@ -84,8 +90,8 @@ int main(int argc, char **argv) {
         goto done;
     }
 
-    envp = cape_envp_new(uid);
-    if (!envp) {
+    err = cape_envp_finalize(uid, &env);
+    if (err) {
         cape_log_error(
             "failed to setup environment variables for child process"
         );
@@ -103,7 +109,7 @@ int main(int argc, char **argv) {
     program_path = argv[index];
     program_args = argv + index;
 
-    err = cape_launch_jail(program_path, program_args, envp, &child_status);
+    err = cape_launch_jail(program_path, program_args, &env, &child_status);
     if (err) {
         cape_log_error("error encountered while launching jail: %d", err);
         goto done;
@@ -121,6 +127,6 @@ int main(int argc, char **argv) {
 done:
     cape_log_error("shutting down");
     cape_logger_shutdown();
-    cape_envp_destroy(envp);
+    cape_string_vec_free(&env);
     return err;
 }
