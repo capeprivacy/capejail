@@ -6,6 +6,7 @@
 #include "banned.h"
 #include "launch.h"
 #include "logger.h"
+#include "vec.h"
 
 static int wait_for_child(
     pid_t child_pid, const char *program_path, int *child_status /* out */
@@ -63,7 +64,7 @@ done:
 int cape_launch_jail(
     const char *program_path,
     char *const *program_args,
-    char *const *envp,
+    const struct cape_string_vec *env,
     int *child_status
 ) {
     pid_t child_pid;
@@ -72,7 +73,13 @@ int cape_launch_jail(
     child_pid = fork();
     if (child_pid == 0) {
         /* child */
-        err = execvpe(program_path, program_args, envp);
+        cape_log_error("executing command:");
+        fprintf(stderr, "> ");
+        for (size_t i = 0; program_args[i] != NULL; i++) {
+            fprintf(stderr, "%s ", program_args[i]);
+        }
+        fprintf(stderr, "\n");
+        err = execvpe(program_path, program_args, env->data);
         if (err) {
             perror(program_path);
             cape_log_error("could not exec: %s", program_path);

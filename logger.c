@@ -15,6 +15,8 @@ void cape_print_usage(void) {
         "certain syscalls\n\n"
         "usage:\n"
         "\t%s [OPTION] -- PROGRAM [ARGS]\n\n"
+        "\t-e\tadd an environment variable in the form of KEY=VALUE\n"
+        "\t\texample: capejail -e HOME=/home/jailuser -e FOO=bar -- ...\n\n"
         "\t-h\tdisplay this help message\n\n"
         "\t-n\tdisable networking for the jailed process\n\n"
         "\t-d\tdirectory to start in within jail\n\n"
