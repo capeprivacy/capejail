@@ -990,6 +990,8 @@ static const int ALLOWED_SYSCALLS[] = {
     SCMP_SYS(sched_rr_get_interval),
     SCMP_SYS(sched_yield),
 
+    SCMP_SYS(sched_setaffinity),
+
     /*
      * Monitor multiple file descriptors.
      */
