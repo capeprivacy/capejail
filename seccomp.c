@@ -536,7 +536,12 @@ static const int ALLOWED_SYSCALLS[] = {
     SCMP_SYS(lgetxattr),
 
     /*
-     * List extended attributes
+     * Make a new name for a file. Added for OCR demo.
+     */
+    SCMP_SYS(link),
+
+    /*
+     * List extended attributes.
      */
     SCMP_SYS(listxattr),
 
@@ -1150,6 +1155,11 @@ static const int ALLOWED_SYSCALLS[] = {
      * Get extended file status.
      */
     SCMP_SYS(statx),
+
+    /*
+     * Simbolic link file system files. Allowed for OCR demo. This operation is higher risk.
+     */
+    SCMP_SYS(symlink),
 
     /*
      * Get filesystem type information.
