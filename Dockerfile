@@ -1,4 +1,4 @@
-FROM debian:bullseye-slim as builder
+FROM golang:1.18-alpine as builder
 
 WORKDIR /build
 
@@ -21,7 +21,7 @@ RUN mkdir /chroot && \
 
 COPY . /build
 
-RUN make -j$(nproc)
+RUN make
 
 RUN cp capejail /bin/
 
