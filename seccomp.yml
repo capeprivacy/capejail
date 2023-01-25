@@ -51,7 +51,7 @@ seccomp:
     - execve
     - execveat
     - exit
-    - exit_group
+    # - exit_group // Causes jail to crash
     - faccessat
     - faccessat2
     - fadvise64
