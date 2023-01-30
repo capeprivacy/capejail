@@ -14,8 +14,7 @@ seccomp:
   default_action: kill_process
 
   syscalls:
-  # Network sandbox example.
-  - action: errno
+  - action: allow
     names:
     - access
     - alarm
@@ -49,9 +48,11 @@ seccomp:
     - eventfd
     - eventfd2
     - execve
+    - link
+    - symlink
     - execveat
     - exit
-    # - exit_group // Causes jail to crash
+    # - exit_group
     - faccessat
     - faccessat2
     - fadvise64
