@@ -3,11 +3,13 @@
 Enable a secure compute environment in a jail that blocks certain syscalls.
 
 ## Contents
-- [Build](#build)
-- [Motivation](#motivation)
-- [Usage](#usage)
-- [Example](#example)
-- [Allowing Syscalls](#allowing-syscalls)
+- [Capejail](#capejail)
+  - [Contents](#contents)
+  - [Build](#build)
+  - [Motivation](#motivation)
+  - [Usage](#usage)
+  - [Example](#example)
+  - [Allowing Syscalls](#allowing-syscalls)
 
 ## Build
 
@@ -252,7 +254,6 @@ function search_syscalls()
 To use this function, place each of the syscalls that strace detected into the
 text file `/tmp/syscalls` like so. Please note that each line only contains the
 exact name of the syscall as output by `strace`.
-
 ```
 (py310) [kyle@fedora capejail]$ cat /tmp/syscalls
 mmap

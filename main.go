@@ -61,8 +61,10 @@ func main() {
 	// Load the BPF filter using the seccomp system call.
 	if err = seccomp.LoadFilter(filter); err != nil {
 		fmt.Fprintf(os.Stderr, "error loading filter: %v\n", err)
-		os.Exit(1)
+		os.Exit(3)
 	}
+	fmt.Println("hello")
+	os.Stdout.Sync()
 
 	// Execute the specified command (requires execve).
 	cmd := exec.Command(args[0], args[1:]...)
