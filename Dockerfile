@@ -1,4 +1,4 @@
-FROM debian:bullseye-slim as builder
+FROM debian:11.6-slim as builder
 
 WORKDIR /build
 
